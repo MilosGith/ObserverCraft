@@ -41,12 +41,12 @@ public class ObserverSession {
         TimeUnit.SECONDS.sleep(1);
         System.out.println("CHUNKS SIZE AFTER REQUEST= " +  server.getChunkQueue().size());
         server.getChunkQueue().forEach(session::send);
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(1);
         System.out.print("SIZE OF PLAYER JOIN QUEUE: " + server.getPlayers().size() + "\n");
-//        server.getPlayers().forEach((k,v) -> {
-//            session.send(k);
-//            session.send(v);
-//        });
+        server.getPlayers().forEach((k,v) -> {
+            session.send(k);
+            session.send(v);
+        });
         this.isReady = true;
     }
 

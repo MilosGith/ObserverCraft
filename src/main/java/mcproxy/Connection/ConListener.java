@@ -18,6 +18,7 @@ import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.logging.Level;
 
 
 public class ConListener implements SessionListener {
@@ -98,16 +99,16 @@ public class ConListener implements SessionListener {
 
     @Override
     public void connected(ConnectedEvent connectedEvent) {
-
+        connection.getLogger().log(Level.INFO, "Connection to minecraft server established");
     }
 
     @Override
     public void disconnecting(DisconnectingEvent disconnectingEvent) {
-
+        connection.getLogger().log(Level.INFO, "Disconnecting from server, reason:" + disconnectingEvent.getReason().toString() + "\n");
     }
 
     @Override
     public void disconnected(DisconnectedEvent disconnectedEvent) {
-
+        connection.getLogger().log(Level.INFO, "Disconnected from server\n");
     }
 }
