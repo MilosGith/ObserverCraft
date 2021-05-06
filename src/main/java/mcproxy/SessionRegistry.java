@@ -40,20 +40,16 @@ public final class SessionRegistry {
     }
 
     public void removeBySession(Session session) {
-//        sessions.forEach(s -> {
-//            if (s.getSession() == session) {
-//                this.remove(s);
-//            }
-//        });
-
         ObserverSession s = findBySession(session);
         this.remove(s);
+        System.out.println("removed a session from the registry");
     }
 
     public ObserverSession findBySession(Session session) {
         ObserverSession obsSession = null;
         for (int i = 0; i < sessions.size(); i++) {
             if (sessions.get(i).getSession() == session) {
+                System.out.println("FOUND SESSION TO REMOVE FROM SESSIONREGISTRY");
                 obsSession = sessions.get(i);
             }
         }

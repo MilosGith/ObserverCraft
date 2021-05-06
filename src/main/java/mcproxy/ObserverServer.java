@@ -22,6 +22,7 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.ClientChatPa
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.player.ClientPlayerAbilitiesPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerChatPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerJoinGamePacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerNotifyClientPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.login.client.LoginStartPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.login.server.LoginSetCompressionPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.login.server.LoginSuccessPacket;
@@ -52,10 +53,15 @@ public class ObserverServer {
 
     Server testServer;
 
+    private Queue<Packet> chunkQueue = new ConcurrentLinkedDeque<>();
 
-    private final Queue<Packet> chunkQueue = new ConcurrentLinkedDeque<>();
+    private HashMap<Packet, Packet> players = new HashMap<>();
 
-    private final HashMap<Packet, Packet> players = new HashMap<>();
+    private ServerNotifyClientPacket rain = null;
+
+    private ServerNotifyClientPacket rainStrength = null;
+
+    private boolean isRaining = false;
 
     public static final Logger logger = Logger.getLogger("Minecraft");
 
@@ -134,7 +140,9 @@ public class ObserverServer {
 
             @Override
             public void sessionRemoved(SessionRemovedEvent event) {
+                System.out.println("REMOVED SESSION");
                 MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
+                //sessionRegistry.findBySession(event.getSession()).getTicker().stop();
                 sessionRegistry.removeBySession(event.getSession());
             }
         });
@@ -189,10 +197,33 @@ public class ObserverServer {
         return connection;
     }
 
+    public void setRain(ServerNotifyClientPacket p) {
+        this.rain = p;
+    }
+
+    public void setRainStrength(ServerNotifyClientPacket p) {
+        this.rainStrength = p;
+    }
+
+    public ServerNotifyClientPacket getRain() {
+        return rain;
+    }
+
+    public ServerNotifyClientPacket getRainStrength() {
+        return rainStrength;
+    }
+
     public int getObservercount() {
         return observerCount;
     }
 
+    public boolean isRaining() {
+        return isRaining;
+    }
+
+    public void setRaining(boolean bool) {
+        isRaining = bool;
+    }
     public void incrementObserverCount() {
         observerCount++;
     }

@@ -8,6 +8,7 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.Server
 import science.atlarge.opencraft.packetlib.Session;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
+import java.sql.Time;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +19,12 @@ public class ObserverSession {
     private ObserverServer server;
     private final Queue<Packet> messageQueue = new ConcurrentLinkedDeque<>();
     private Session session;
+    private ObserverTicker ticker;
 
     public ObserverSession(Session s, ObserverServer serv) {
-        session = s;
-        server = serv;
+        this.session = s;
+        this.server = serv;
+        this.ticker = new ObserverTicker(this, server);
     }
 
     public Session getSession() {
@@ -30,7 +33,6 @@ public class ObserverSession {
 
     public void joinObserver() throws InterruptedException {
         ObserverServer.logger.log(Level.INFO, "JOINED AN OBSERVER");
-        TimeUnit.SECONDS.sleep(2);
         Position pos = server.getSpawn().getPosition();
         session.send(new ServerSpawnPositionPacket(pos));
         session.send(new ServerPlayerPositionRotationPacket((double) pos.getX(), (double) pos.getY(), (double) pos.getZ(), 0f, 0f, 0));
@@ -41,13 +43,35 @@ public class ObserverSession {
         TimeUnit.SECONDS.sleep(1);
         System.out.println("CHUNKS SIZE AFTER REQUEST= " +  server.getChunkQueue().size());
         server.getChunkQueue().forEach(session::send);
-        TimeUnit.SECONDS.sleep(1);
         System.out.print("SIZE OF PLAYER JOIN QUEUE: " + server.getPlayers().size() + "\n");
-        server.getPlayers().forEach((k,v) -> {
-            session.send(k);
-            session.send(v);
-        });
+        sendWeather();
+        spawnPlayers();
         this.isReady = true;
+        //ticker.start();
+    }
+
+
+    private void spawnPlayers() {
+        server.getPlayers().forEach((k,v) -> {
+            if (v != null && k!= null) {
+                System.out.println("trying to send spawn info");
+                session.send(k);
+                session.send(v);
+                System.out.println("SEND BOTH SPAWN PACKETS");
+            }
+        });
+    }
+
+    private void sendWeather() {
+        System.out.println("raining is currently: " + server.isRaining());
+        if (server.isRaining()) {
+            session.send(server.getRain());
+            session.send(server.getRainStrength());
+        }
+    }
+
+    public ObserverTicker getTicker() {
+        return ticker;
     }
 
     public boolean isReady() {
