@@ -1,29 +1,26 @@
 package mcproxy.Connection;
 
 
-import com.flowpowered.network.ConnectionManager;
+import mcproxy.Player;
 import mcproxy.ObserverServer;
-import org.bukkit.event.entity.EntityTeleportEvent;
 import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
 import science.atlarge.opencraft.mcprotocollib.data.SubProtocol;
-import science.atlarge.opencraft.mcprotocollib.data.game.entity.player.GameMode;
-import science.atlarge.opencraft.mcprotocollib.data.game.world.notify.ClientNotification;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerPlayerListEntryPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityPositionRotationPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityDestroyPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityPositionPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityTeleportPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnMobPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerChunkDataPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerNotifyClientPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerSpawnPositionPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerUpdateTimePacket;
 import science.atlarge.opencraft.packetlib.event.session.*;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -63,21 +60,13 @@ public class ConListener implements SessionListener {
                 }
                 if (packet instanceof ServerChunkDataPacket) {
                     ServerChunkDataPacket p = (ServerChunkDataPacket) packet;
-                   // System.out.println("CHUNK X: " + p.getColumn().getX() + " CHUNK Z: " + p.getColumn().getZ() + "\n");
-                   // System.out.println("added CHUNK packet to queue");
                     connection.getServer().getChunkQueue().add(p);
                 }
 
                 if(packet instanceof ServerSpawnPlayerPacket) {
                     System.out.println("adding server join game packet to queueu");
                     ServerSpawnPlayerPacket p = (ServerSpawnPlayerPacket) packet;
-                    UUID PID = p.getUUID();
-                    connection.getServer().getPlayers().forEach((k,v) -> {
-                        ServerPlayerListEntryPacket pack = (ServerPlayerListEntryPacket) k;
-                        if (pack.getEntries()[0].getProfile().getId().equals(PID)) {
-                            connection.getServer().getPlayers().replace(k, null, p);
-                        }
-                    });
+                    connection.getServer().getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(),  p.getX(), p.getY(), p.getZ(), p.getMetadata()));
                     System.out.print("ENTITY NR: " + p.getUUID() + " GOT ADDED\n");
                 }
 
@@ -85,25 +74,24 @@ public class ConListener implements SessionListener {
                     ServerPlayerListEntryPacket p = (ServerPlayerListEntryPacket) packet;
                     switch (p.getAction()) {
                         case REMOVE_PLAYER:
-
-                            System.out.println("size before remove player: " + connection.getServer().getPlayers().size() + "\n");
-                            Set<Packet> keyset =  connection.getServer().getPlayers().keySet();
+                            System.out.println("size before remove player: " + connection.getServer().getPlayersToJoin().size() + "\n");
+                            Queue<Packet> players = connection.getServer().getPlayersToJoin();
                             System.out.println("ID OF PLAYER WE WANT TO REMOVE: " + p.getEntries()[0].getProfile().getId() + "\n");
-                            for (Packet value : keyset) {
-                                ServerPlayerListEntryPacket toTest = (ServerPlayerListEntryPacket) value;
+                            for (Packet player : players) {
+                                ServerPlayerListEntryPacket toTest = (ServerPlayerListEntryPacket) player;
                                 if (toTest.getEntries()[0].getProfile().getId().equals(p.getEntries()[0].getProfile().getId())) {
-                                    connection.getServer().getPlayers().remove(toTest);
+                                    connection.getServer().getPlayersToJoin().remove(toTest);
+                                    connection.getServer().getPlayerPositionManager().removeEntity(p.getEntries()[0].getProfile().getId());
                                     System.out.println("ID OF PLAYER WE REMOVED: " + toTest.getEntries()[0].getProfile().getId() + "\n");
                                     break;
                                 }
                             }
-
-                            System.out.println("size after remove player: " + connection.getServer().getPlayers().size() + "\n");
+                            System.out.println("size after remove player: " + connection.getServer().getPlayersToJoin().size() + "\n");
                         break;
                         case ADD_PLAYER:
-                            System.out.println("size before adding player: " + connection.getServer().getPlayers().size() + "\n");
-                            connection.getServer().getPlayers().put(p, null);
-                            System.out.println("size after adding player: " + connection.getServer().getPlayers().size() + "\n");
+                            System.out.println("size before adding player: " + connection.getServer().getPlayersToJoin().size() + "\n");
+                            connection.getServer().getPlayersToJoin().add(p);
+                            System.out.println("size after adding player: " + connection.getServer().getPlayersToJoin().size() + "\n");
                     }
                 }
                 if (packet instanceof ServerNotifyClientPacket) {
@@ -120,9 +108,25 @@ public class ConListener implements SessionListener {
                             connection.getServer().setRaining(false);
                     }
                 }
-                if(packet instanceof ServerEntityPositionRotationPacket) {
-                    ServerEntityPositionRotationPacket p = (ServerEntityPositionRotationPacket) packet;
-                    p.
+
+                if(packet instanceof ServerEntityPositionPacket) {
+                    ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
+                    connection.getServer().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p);
+                }
+
+                if(packet instanceof ServerSpawnMobPacket) {
+                    ServerSpawnMobPacket p = (ServerSpawnMobPacket) packet;
+                    connection.getServer().getMobQueue().add(p);
+                }
+
+                if (packet instanceof ServerEntityDestroyPacket) {
+                    ServerEntityDestroyPacket p = (ServerEntityDestroyPacket) packet;
+                    //connection.getServer().getEntityManager().removeEntity(p.getEntityIds()[0]);
+                }
+
+                if (packet instanceof ServerUpdateTimePacket) {
+                    ServerUpdateTimePacket p = (ServerUpdateTimePacket) packet;
+                    connection.getServer().setServerTime(p);
                 }
             }
         }

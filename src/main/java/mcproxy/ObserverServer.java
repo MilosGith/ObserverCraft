@@ -2,13 +2,10 @@ package mcproxy;
 
 import com.github.steveice10.mc.auth.data.GameProfile;
 
-import lombok.Getter;
-import lombok.Setter;
 import mcproxy.Connection.ServerConnection;
 import science.atlarge.opencraft.mcprotocollib.MinecraftConstants;
 import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
 import science.atlarge.opencraft.mcprotocollib.ServerLoginHandler;
-import science.atlarge.opencraft.mcprotocollib.data.SubProtocol;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.player.GameMode;
 import science.atlarge.opencraft.mcprotocollib.data.game.setting.Difficulty;
@@ -19,34 +16,26 @@ import science.atlarge.opencraft.mcprotocollib.data.status.ServerStatusInfo;
 import science.atlarge.opencraft.mcprotocollib.data.status.VersionInfo;
 import science.atlarge.opencraft.mcprotocollib.data.status.handler.ServerInfoBuilder;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.ClientChatPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.player.ClientPlayerAbilitiesPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerChatPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerJoinGamePacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerNotifyClientPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.login.client.LoginStartPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.login.server.LoginSetCompressionPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.login.server.LoginSuccessPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerUpdateTimePacket;
 import science.atlarge.opencraft.packetlib.Server;
 import science.atlarge.opencraft.packetlib.Session;
 import science.atlarge.opencraft.packetlib.event.server.ServerAdapter;
 import science.atlarge.opencraft.packetlib.event.server.SessionAddedEvent;
 import science.atlarge.opencraft.packetlib.event.server.SessionRemovedEvent;
 import science.atlarge.opencraft.packetlib.event.session.PacketReceivedEvent;
-import science.atlarge.opencraft.packetlib.event.session.PacketSendingEvent;
 import science.atlarge.opencraft.packetlib.event.session.PacketSentEvent;
 import science.atlarge.opencraft.packetlib.event.session.SessionAdapter;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 import science.atlarge.opencraft.packetlib.tcp.TcpSessionFactory;
 
-import java.net.InetSocketAddress;
-import java.sql.Time;
 import java.util.HashMap;
 import java.util.Queue;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import static org.junit.Assert.assertTrue;
 import java.net.Proxy;
 
 public class ObserverServer {
@@ -55,11 +44,19 @@ public class ObserverServer {
 
     private Queue<Packet> chunkQueue = new ConcurrentLinkedDeque<>();
 
+    private Queue<Packet> mobQueue = new ConcurrentLinkedDeque<>();
+
     private HashMap<Packet, Packet> players = new HashMap<>();
+
+    private Queue<Packet> playersToJoin = new ConcurrentLinkedDeque<>();
+
+    private PlayerPositionManager playerManager = new PlayerPositionManager();
 
     private ServerNotifyClientPacket rain = null;
 
     private ServerNotifyClientPacket rainStrength = null;
+
+    private ServerUpdateTimePacket serverTime = null;
 
     private boolean isRaining = false;
 
@@ -98,7 +95,7 @@ public class ObserverServer {
         server.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, new ServerLoginHandler() {
             @Override
             public void loggedIn(Session session) {
-                session.send(new ServerJoinGamePacket(0, false, GameMode.CREATIVE, 0, Difficulty.PEACEFUL, 10, WorldType.DEFAULT, false));
+                session.send(new ServerJoinGamePacket(0, false, GameMode.CREATIVE, 0, Difficulty.PEACEFUL, 200, WorldType.DEFAULT, false));
             }
         });
 
@@ -189,6 +186,12 @@ public class ObserverServer {
         return chunkQueue;
     }
 
+    public Queue<Packet> getMobQueue() {
+        return mobQueue;
+    }
+
+    public  Queue<Packet> getPlayersToJoin() { return playersToJoin; }
+
     public HashMap<Packet, Packet> getPlayers() {
         return players;
     }
@@ -213,8 +216,20 @@ public class ObserverServer {
         return rainStrength;
     }
 
+    public PlayerPositionManager getPlayerPositionManager() {
+        return playerManager;
+    }
+
     public int getObservercount() {
         return observerCount;
+    }
+
+    public void setServerTime(ServerUpdateTimePacket p) {
+        serverTime = p;
+    }
+
+    public ServerUpdateTimePacket getServerTime() {
+        return serverTime;
     }
 
     public boolean isRaining() {
