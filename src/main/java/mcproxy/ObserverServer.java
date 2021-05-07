@@ -3,6 +3,7 @@ package mcproxy;
 import com.github.steveice10.mc.auth.data.GameProfile;
 
 import mcproxy.Connection.ServerConnection;
+import mcproxy.util.SpawnLocation;
 import science.atlarge.opencraft.mcprotocollib.MinecraftConstants;
 import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
 import science.atlarge.opencraft.mcprotocollib.ServerLoginHandler;
@@ -31,7 +32,6 @@ import science.atlarge.opencraft.packetlib.event.session.SessionAdapter;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 import science.atlarge.opencraft.packetlib.tcp.TcpSessionFactory;
 
-import java.util.HashMap;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
@@ -45,8 +45,6 @@ public class ObserverServer {
     private Queue<Packet> chunkQueue = new ConcurrentLinkedDeque<>();
 
     private Queue<Packet> mobQueue = new ConcurrentLinkedDeque<>();
-
-    private HashMap<Packet, Packet> players = new HashMap<>();
 
     private Queue<Packet> playersToJoin = new ConcurrentLinkedDeque<>();
 
@@ -139,7 +137,7 @@ public class ObserverServer {
             public void sessionRemoved(SessionRemovedEvent event) {
                 System.out.println("REMOVED SESSION");
                 MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
-                //sessionRegistry.findBySession(event.getSession()).getTicker().stop();
+                sessionRegistry.findBySession(event.getSession()).getTicker().stop();
                 sessionRegistry.removeBySession(event.getSession());
             }
         });
@@ -192,10 +190,6 @@ public class ObserverServer {
 
     public  Queue<Packet> getPlayersToJoin() { return playersToJoin; }
 
-    public HashMap<Packet, Packet> getPlayers() {
-        return players;
-    }
-
     public ServerConnection getConnection() {
         return connection;
     }
@@ -224,6 +218,10 @@ public class ObserverServer {
         return observerCount;
     }
 
+    public void incrementObserverCount() {
+        observerCount++;
+    }
+
     public void setServerTime(ServerUpdateTimePacket p) {
         serverTime = p;
     }
@@ -239,7 +237,5 @@ public class ObserverServer {
     public void setRaining(boolean bool) {
         isRaining = bool;
     }
-    public void incrementObserverCount() {
-        observerCount++;
-    }
+
 }

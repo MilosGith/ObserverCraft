@@ -1,4 +1,4 @@
-package mcproxy;
+package mcproxy.util;
 
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
 

@@ -2,6 +2,7 @@ package mcproxy;
 
 import com.flowpowered.network.Message;
 import it.unimi.dsi.fastutil.ints.IntSets;
+import lombok.Getter;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerPlayerListEntryPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerAbilitiesPacket;
@@ -20,6 +21,7 @@ import java.util.logging.Level;
 public class ObserverSession {
     private boolean isReady = false;
     private ObserverServer server;
+    @Getter
     private final Queue<Packet> messageQueue = new ConcurrentLinkedDeque<>();
     private Session session;
     private ObserverTicker ticker;
@@ -43,15 +45,14 @@ public class ObserverSession {
         System.out.println("CHUNKS SIZE = " +  server.getChunkQueue().size());
         server.getChunkQueue().clear();
         server.getConnection().chat("/chunks");
-        TimeUnit.SECONDS.sleep(1);
         System.out.println("CHUNKS SIZE AFTER REQUEST= " +  server.getChunkQueue().size());
         server.getChunkQueue().forEach(session::send);
         System.out.print("SIZE OF PLAYER JOIN QUEUE: " + server.getPlayersToJoin().size() + "\n");
         sendWeather();
         spawnMobs();
         spawnPlayers();
+        ticker.start();
         this.isReady = true;
-        //ticker.start();
     }
 
     private void spawnPlayers() {
@@ -80,6 +81,14 @@ public class ObserverSession {
             session.send(server.getRain());
             session.send(server.getRainStrength());
         }
+    }
+
+    public void pulse() {
+        Queue<Packet> toRemove = messageQueue;
+        toRemove.forEach(session::send);
+        server.getSessionRegistry().getSessions().forEach(s -> {
+            s.getMessageQueue().removeAll(toRemove);
+        });
     }
 
     public ObserverTicker getTicker() {

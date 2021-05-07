@@ -1,5 +1,6 @@
 package mcproxy;
 
+import mcproxy.util.Scheduler;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.Queue;
@@ -35,19 +36,14 @@ public class ObserverTicker implements Runnable {
 
     @Override
     public void run() {
-        Scheduler sched = new Scheduler(1000);
+        Scheduler sched = new Scheduler(50);
         sched.start();
 
         while (running.get()) {
-//             Queue<Packet> toRemove = session.getMessageQueue();
-//             toRemove.forEach(session.getSession()::send);
-//             server.getSessionRegistry().getSessions().forEach(s -> {
-//                 s.getMessageQueue().removeAll(toRemove);
-//             });
-             System.out.println("TICKING OBSERVER " + running.get() + "\n");
+             server.getSessionRegistry().getSessions().forEach(ObserverSession::pulse);
+             //System.out.println("TICKING OBSERVER " + running.get() + "\n");
             sched.sleepTick();
         }
-
     }
 }
 

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package mcproxy;
+package mcproxy.util;
 
 import java.util.concurrent.TimeUnit;
 

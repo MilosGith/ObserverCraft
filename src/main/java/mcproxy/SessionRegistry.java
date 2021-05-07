@@ -1,8 +1,10 @@
 package mcproxy;
 
 import science.atlarge.opencraft.packetlib.Session;
+import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.ArrayList;
+import java.util.Queue;
 
 /**
  * A list of all the sessions which provides a convenient {@link #pulse()} method to pulse every
@@ -60,7 +62,7 @@ public final class SessionRegistry {
         return sessions;
     }
 
-    public void Pulse() {
+    public void pulse() {
         sessions.forEach(s -> {
             s.getMessageQueue().forEach(m -> {
                 s.getSession().send(m);

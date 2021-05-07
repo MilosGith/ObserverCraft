@@ -28,8 +28,7 @@ import java.util.logging.Level;
 
 public class ConListener implements SessionListener {
     private ServerConnection connection;
-    private int count;
-    private Lock lock = new ReentrantLock();
+    private int count = 0;
 
     public ConListener(ServerConnection connection) {
         this.connection = connection;
@@ -38,7 +37,7 @@ public class ConListener implements SessionListener {
     public void packetReceived(PacketReceivedEvent pre) {
         Packet packet = pre.getPacket();
        // System.out.println("received package: ," + pre.getPacket().getClass().getName().toString() +  "   | Number packages:" + count);
-        count++;
+       // count++;
         MinecraftProtocol pro = (MinecraftProtocol) pre.getSession().getPacketProtocol();
 
         if (pro.getSubProtocol() == SubProtocol.GAME) {
@@ -46,17 +45,23 @@ public class ConListener implements SessionListener {
                 if (!(packet instanceof ServerEntityTeleportPacket)) {
                     connection.getServer().getSessionRegistry().getSessions().forEach(s -> {
                         if (s.isReady()) {
-                            s.getSession().send(pre.getPacket());
-                            //s.getMessageQueue().add(packet);
+                            //s.getSession().send(pre.getPacket());
+                            s.getMessageQueue().add(packet);
                         }
                     });
-            }
+                } else {
+                   // System.out.println("RECEIVED TELEPORT PACKET\n");
+                    ServerEntityTeleportPacket p = (ServerEntityTeleportPacket) packet;
+                    //System.out.println("ID OF ENTITY WE WANT TO TELEPORT: " + p.getEntityId());
+                    if (connection.getServer().getPlayerPositionManager().findById(p.getEntityId()) != null) {
+                       // System.out.println("WERE TRYING TO TELEPORT A PLAYER NOW!!!!!!!!!!!!!!!!!!");
+                    }
+                }
                 if (packet instanceof ServerSpawnPositionPacket) {
                     ServerSpawnPositionPacket p = (ServerSpawnPositionPacket) packet;
                     System.out.println("SPAWN LOCATION RECEIVED");
                     ObserverServer server = connection.getServer();
                     server.setSpawn(p.getPosition());
-
                 }
                 if (packet instanceof ServerChunkDataPacket) {
                     ServerChunkDataPacket p = (ServerChunkDataPacket) packet;
@@ -112,6 +117,8 @@ public class ConListener implements SessionListener {
                 if(packet instanceof ServerEntityPositionPacket) {
                     ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
                     connection.getServer().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p);
+                    count++;
+                    System.out.println("Number of position packets: " + count);
                 }
 
                 if(packet instanceof ServerSpawnMobPacket) {
@@ -128,6 +135,8 @@ public class ConListener implements SessionListener {
                     ServerUpdateTimePacket p = (ServerUpdateTimePacket) packet;
                     connection.getServer().setServerTime(p);
                 }
+
+
             }
         }
     }
