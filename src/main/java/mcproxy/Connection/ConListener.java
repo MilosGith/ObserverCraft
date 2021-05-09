@@ -3,6 +3,8 @@ package mcproxy.Connection;
 
 import mcproxy.Player;
 import mcproxy.ObserverServer;
+import mcproxy.Spectator.Spectator;
+import mcproxy.Spectator.SpectatorSession;
 import mcproxy.WorldState;
 import mcproxy.util.WorldPosition;
 import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
@@ -44,8 +46,17 @@ public class ConListener implements SessionListener {
         if (pro.getSubProtocol() == SubProtocol.GAME) {
             connection.getServer().getSessionRegistry().getSessions().forEach(s -> {
                 if (s.isReady()) {
-                    s.getMessageQueue().add(packet);
-                }
+                    if (packet instanceof ServerEntityPositionPacket) {
+                        ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
+                        Player player = connection.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                        if (player != null && s.isInRange(player)) {
+                            s.getMessageQueue().add(packet);
+                        } else {
+                        }
+                    } else {
+                        s.getMessageQueue().add(packet);
+                        }
+                    }
             });
 
             if (packet instanceof ServerSpawnPositionPacket) {
@@ -95,7 +106,6 @@ public class ConListener implements SessionListener {
                         System.out.println("size before adding player: " + worldState.getPlayersToJoin().size() + "\n");
                         worldState.getPlayersToJoin().add(p);
                         System.out.println("size after adding player: " + worldState.getPlayersToJoin().size() + "\n");
-
                 }
             }
 
@@ -139,6 +149,19 @@ public class ConListener implements SessionListener {
     }
 
 
+    public void forwardPacket(Packet packet) {
+        connection.getServer().getSessionRegistry().getSessions().forEach(s -> {
+            //s.getMessageQueue().add(packet);
+            if (packet instanceof ServerEntityPositionPacket) {
+                ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
+                Player player = connection.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                if (s.getSpectator().getPlayersInRange().contains(player)) {
+                    System.out.println("THE PLAYER WE WANT TO UPDATE IS IN RANGE");
+                    s.getMessageQueue().add(packet);
+                }
+            }
+        });
+    }
 
     @Override
     public void packetSending(PacketSendingEvent packetSendingEvent) {

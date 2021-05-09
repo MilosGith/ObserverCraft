@@ -8,6 +8,7 @@ import mcproxy.WorldState;
 import science.atlarge.opencraft.mcprotocollib.data.game.PlayerListEntry;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerPlayerListEntryPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityDestroyPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerAbilitiesPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
@@ -15,6 +16,7 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.Server
 import science.atlarge.opencraft.packetlib.Session;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
+import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
@@ -69,20 +71,54 @@ public class SpectatorSession {
             System.out.println("\n\nNUMBER OF PLAYERS: " + server.getPlayerPositionManager().getEntityList().size());
             System.out.println("TO JOIN NUMBER: " + toJoin.size());
             ServerPlayerListEntryPacket lep = (ServerPlayerListEntryPacket) p;
+            session.send(p);
             for (PlayerListEntry entry : lep.getEntries()) {
                 Player player = server.getPlayerPositionManager().findByUUID(entry.getProfile().getId());
-                if (player != null) {
+                if (player != null && isInRange(player)) {
                     System.out.println("FOUND A PLAYER TO SPAWN IN");
                     System.out.println(player.getPositon().toString());
                     ServerSpawnPlayerPacket packet = new ServerSpawnPlayerPacket(player.getId(), player.getUUID(), player.getPositon().getX(), player.getPositon().getY(), player.getPositon().getZ(), 0, 0, player.getMetadata());
-                    session.send(p);
                     session.send(packet);
+                    spectator.getPlayersInRange().add(player);
                 }
             }
         }
     }
 
-    public void spawnMobs() {
+    public boolean isInRange(Player p) {
+        double distance = server.getPlayerPositionManager().getDistance(spectator.getPosition().getX(), spectator.getPosition().getZ(), p.getPositon().getX(),  p.getPositon().getZ());
+        return distance < 30;
+    }
+
+    private boolean isAlreadyInRange(Player p) {
+        return spectator.getPlayersInRange().contains(p);
+    }
+
+    public void updatePlayersInRange() {
+        ArrayList<Player> players =  server.getPlayerPositionManager().getEntityList();
+        ArrayList<Player> inRange = new ArrayList<>();
+
+        for (Player player: spectator.getPlayersInRange()) {
+            if (!isInRange(player)) {
+                session.send(new ServerEntityDestroyPacket(player.getId()));
+            }
+        }
+
+        for (Player player : players) {
+            if (isInRange(player)) {
+                inRange.add(player);
+                //System.out.println("PLAYER IS NOW IN RANGE");
+                if (!isAlreadyInRange(player)) {
+                   // System.out.println("PLAYER WASNT IN RANGE YET");
+                    session.send(new ServerSpawnPlayerPacket(player.getId(), player.getUUID(), player.getPositon().getX(), player.getPositon().getY(), player.getPositon().getZ(), 0, 0, player.getMetadata()));
+                }
+            }
+        }
+        spectator.updatePlayersInRange(inRange);
+    }
+
+
+    private void spawnMobs() {
         server.getWorldState().getMobQueue().forEach(session::send);
     }
 
@@ -98,9 +134,8 @@ public class SpectatorSession {
     public void pulse() {
         Queue<Packet> toRemove = messageQueue;
         toRemove.forEach(session::send);
-        server.getSessionRegistry().getSessions().forEach(s -> {
-            s.getMessageQueue().removeAll(toRemove);
-        });
+        getMessageQueue().removeAll(toRemove);
+        updatePlayersInRange();
     }
 
     public SpectatorTicker getTicker() {

@@ -3,6 +3,8 @@ package mcproxy;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityPositionPacket;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class PlayerPositionManager {
@@ -33,6 +35,7 @@ public class PlayerPositionManager {
         for (Player entity : entityList) {
             if (entity.getId() == id) {
                 found=  entity;
+                //System.out.println("FOUND PLAYER BY ID");
                 break;
             }
         }
@@ -55,7 +58,9 @@ public class PlayerPositionManager {
     public double getDistance(double x1, double z1, double x2, double z2) {
         double ac = z2 - z1;
         double bc = x2 - x1;
-        return Math.sqrt(Math.pow(ac, 2) + Math.pow(bc, 2));
+        double distance = Math.sqrt(ac * ac + bc * bc);
+        //System.out.println("DISTANCE: " + distance);
+        return distance;
     }
 
     public void printPlayerPositions() {

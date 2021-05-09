@@ -34,6 +34,9 @@ public final class SessionRegistry {
         return obsSession;
     }
 
+    public void pulse() {
+        sessions.forEach(SpectatorSession::pulse);
+    }
     public ArrayList<SpectatorSession> getSessions() {
         return sessions;
     }

@@ -78,7 +78,7 @@ public class ObserverServer {
         server.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, new ServerLoginHandler() {
             @Override
             public void loggedIn(Session session) {
-                session.send(new ServerJoinGamePacket(0, false, GameMode.CREATIVE, 0, Difficulty.PEACEFUL, 200, WorldType.DEFAULT, false));
+                session.send(new ServerJoinGamePacket(observerCount, false, GameMode.CREATIVE, 0, Difficulty.PEACEFUL, 200, WorldType.DEFAULT, false));
             }
         });
 
@@ -87,7 +87,7 @@ public class ObserverServer {
             @Override
             public void sessionAdded(SessionAddedEvent event) {
                 SpawnLocation spawn = worldState.getSpawn();
-                Spectator newSpectator = new Spectator(new WorldPosition(spawn.getPosition().getX(), spawn.getPosition().getY(), spawn.getPosition().getZ()));
+                Spectator newSpectator = new Spectator(new WorldPosition(spawn.getPosition().getX(), spawn.getPosition().getY(), spawn.getPosition().getZ()), observerCount);
                 sessionRegistry.add(new SpectatorSession(event.getSession(), ObserverServer.this, newSpectator));
 
                 System.out.println("SESSION HAS BEEN ADDED TO SESSIONREGISTRY");
