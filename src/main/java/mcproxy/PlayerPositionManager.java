@@ -17,9 +17,8 @@ public class PlayerPositionManager {
         Player found = null;
         for (Player entity : entityList) {
             System.out.println("ID TO FIND: " + id + "\n");
-            System.out.println("COMPARING ID TO: " + entity.getUUID() + "\n");
             if (entity.getUUID().equals(id)) {
-                //System.out.println("COMPARING ID TO: " + entity.getUUID() + "\n");
+                System.out.println("COMPARING ID TO: " + entity.getUUID() + "\n");
                 System.out.println("FOUND THE PLAYER BY UUID");
                 found = entity;
                 break;
@@ -47,20 +46,16 @@ public class PlayerPositionManager {
     public void updatEntityPosition(int ID, ServerEntityPositionPacket p) {
         Player toUpdate = findById(ID);
         if (toUpdate != null) {
-            toUpdate.updatePosition(p.getMovementX(), p.getMovementY(), p.getMovementZ());
-           // System.out.println("Updated player entity position, new coords are  x: " + toUpdate.getX() + " y: " +  toUpdate.getY() + " z: " + toUpdate.getZ());
+            toUpdate.updateX(p.getMovementX());
+            toUpdate.updateY(p.getMovementY());
+            toUpdate.updateZ(p.getMovementZ());
+            System.out.println("Updated player entity position, new coords are  x: " + toUpdate.getX() + " y: " +  toUpdate.getY() + " z: " + toUpdate.getZ());
         }
-    }
-
-    public double getDistance(double x1, double z1, double x2, double z2) {
-        double ac = z2 - z1;
-        double bc = x2 - x1;
-        return Math.sqrt(Math.pow(ac, 2) + Math.pow(bc, 2));
     }
 
     public void printPlayerPositions() {
         entityList.forEach(p -> {
-            System.out.println("player position request: " +  p.getPositon().toString() +  "\n");
+            System.out.println("player position request: " +  p.getX() + " y: " +  p.getY() + " z: " + p.getZ() + "\n");
         });
     }
 }

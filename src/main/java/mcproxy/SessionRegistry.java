@@ -1,40 +1,72 @@
 package mcproxy;
 
-import mcproxy.Spectator.SpectatorSession;
 import science.atlarge.opencraft.packetlib.Session;
+import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.ArrayList;
+import java.util.Queue;
 
+/**
+ * A list of all the sessions which provides a convenient {@link #pulse()} method to pulse every
+ * session in one operation.
+ *
+ * @author Graham Edgecombe
+ */
 public final class SessionRegistry {
 
-    private final ArrayList<SpectatorSession> sessions = new ArrayList<>();
+    /**
+     * A list of the sessions.
+     */
+    private final ArrayList<ObserverSession> sessions = new ArrayList<>();
 
-    public void add(SpectatorSession session) {
+    /**
+     * Pulses all the sessions.
+     */
+
+    /**
+     * Adds a new session.
+     *
+     * @param session The session to add.
+     */
+    public void add(ObserverSession session) {
         sessions.add(session);
     }
 
-    public void remove(SpectatorSession session) {
+    /**
+     * Removes a session.
+     *
+     * @param session The session to remove.
+     */
+    public void remove(ObserverSession session) {
         sessions.remove(session);
     }
 
     public void removeBySession(Session session) {
-        SpectatorSession s = findBySession(session);
+        ObserverSession s = findBySession(session);
         this.remove(s);
         System.out.println("removed a session from the registry");
     }
 
-    public SpectatorSession findBySession(Session session) {
-        SpectatorSession obsSession = null;
+    public ObserverSession findBySession(Session session) {
+        ObserverSession obsSession = null;
         for (int i = 0; i < sessions.size(); i++) {
             if (sessions.get(i).getSession() == session) {
-               // System.out.println("FOUND SESSION TO REMOVE FROM SESSIONREGISTRY");
+                System.out.println("FOUND SESSION TO REMOVE FROM SESSIONREGISTRY");
                 obsSession = sessions.get(i);
             }
         }
         return obsSession;
     }
 
-    public ArrayList<SpectatorSession> getSessions() {
+    public ArrayList<ObserverSession> getSessions() {
         return sessions;
+    }
+
+    public void pulse() {
+        sessions.forEach(s -> {
+            s.getMessageQueue().forEach(m -> {
+                s.getSession().send(m);
+            });
+        });
     }
 }
