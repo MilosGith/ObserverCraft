@@ -132,7 +132,7 @@ public class ConListener implements SessionListener {
             else if (packet instanceof ServerEntityDestroyPacket) {
                 ServerEntityDestroyPacket p = (ServerEntityDestroyPacket) packet;
                 if (connection.getServer().getPlayerPositionManager().findById(p.getEntityIds()[0]) != null) {
-                    System.out.println("TRYING TO DESTROY A PLAYER ENTITY");
+                    //System.out.println("TRYING TO DESTROY A PLAYER ENTITY");
                 }
             }
         }
