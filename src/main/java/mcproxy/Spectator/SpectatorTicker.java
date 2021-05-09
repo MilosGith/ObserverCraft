@@ -1,18 +1,17 @@
-package mcproxy;
+package mcproxy.Spectator;
 
+import mcproxy.ObserverServer;
 import mcproxy.util.Scheduler;
-import science.atlarge.opencraft.packetlib.packet.Packet;
 
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ObserverTicker implements Runnable {
+public class SpectatorTicker implements Runnable {
 
-    private final ObserverSession session;
+    private final SpectatorSession session;
     private final ObserverServer server;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public ObserverTicker(ObserverSession ses, ObserverServer server) {
+    public SpectatorTicker(SpectatorSession ses, ObserverServer server) {
         this.session = ses;
         this.server = server;
     }
@@ -40,7 +39,7 @@ public class ObserverTicker implements Runnable {
         sched.start();
 
         while (running.get()) {
-             server.getSessionRegistry().getSessions().forEach(ObserverSession::pulse);
+             server.getSessionRegistry().getSessions().forEach(SpectatorSession::pulse);
              //System.out.println("TICKING OBSERVER " + running.get() + "\n");
             sched.sleepTick();
         }
