@@ -6,6 +6,7 @@ import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.ClientChatPacket;
 import science.atlarge.opencraft.packetlib.Client;
 import science.atlarge.opencraft.packetlib.Session;
+import science.atlarge.opencraft.packetlib.packet.Packet;
 import science.atlarge.opencraft.packetlib.tcp.TcpSessionFactory;
 
 import java.util.UUID;
@@ -14,7 +15,7 @@ import java.util.logging.Logger;
 
 public class ServerConnection {
     private ObserverServer server;
-    private MinecraftProtocol protocol = new MinecraftProtocol(UUID.randomUUID().toString().substring(0, 6));
+    private MinecraftProtocol protocol = new MinecraftProtocol("observer");
     private String host = "127.0.0.1";
     private int port = 25565;
     private Client client;
@@ -46,6 +47,10 @@ public class ServerConnection {
 
     public void chat (String msg) {
         client.getSession().send(new ClientChatPacket(msg));
+    }
+
+    public void send(Packet packet) {
+        client.getSession().send(packet);
     }
 
     public ObserverServer getServer() {

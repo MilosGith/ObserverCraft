@@ -47,11 +47,10 @@ public class PlayerPositionManager {
         entityList.remove(toRemove);
     }
 
-    public void updatEntityPosition(int ID, ServerEntityPositionPacket p) {
+    public void updatEntityPosition(int ID, double x, double y, double z) {
         Player toUpdate = findById(ID);
         if (toUpdate != null) {
-            toUpdate.updatePosition(p.getMovementX(), p.getMovementY(), p.getMovementZ());
-           // System.out.println("Updated player entity position, new coords are  x: " + toUpdate.getX() + " y: " +  toUpdate.getY() + " z: " + toUpdate.getZ());
+            toUpdate.updatePosition(x,y,z);
         }
     }
 

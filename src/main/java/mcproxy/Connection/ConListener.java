@@ -11,15 +11,12 @@ import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
 import science.atlarge.opencraft.mcprotocollib.data.SubProtocol;
 import science.atlarge.opencraft.mcprotocollib.data.game.PlayerListEntry;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerPlayerListEntryPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityDestroyPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityPositionPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityTeleportPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.*;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnMobPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerChunkDataPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerNotifyClientPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerSpawnPositionPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerUpdateTimePacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.*;
+import science.atlarge.opencraft.packetlib.Server;
 import science.atlarge.opencraft.packetlib.event.session.*;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
@@ -45,18 +42,7 @@ public class ConListener implements SessionListener {
 
         if (pro.getSubProtocol() == SubProtocol.GAME) {
             connection.getServer().getSessionRegistry().getSessions().forEach(s -> {
-                if (s.isReady()) {
-                    if (packet instanceof ServerEntityPositionPacket) {
-                        ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
-                        Player player = connection.getServer().getPlayerPositionManager().findById(p.getEntityId());
-                        if (player != null && s.isInRange(player)) {
-                            s.getMessageQueue().add(packet);
-                        } else {
-                        }
-                    } else {
-                        s.getMessageQueue().add(packet);
-                        }
-                    }
+                s.getPacketForwarder().forwardPacket(packet);
             });
 
             if (packet instanceof ServerSpawnPositionPacket) {
@@ -72,8 +58,8 @@ public class ConListener implements SessionListener {
             }
 
             else if(packet instanceof ServerSpawnPlayerPacket) {
-                System.out.println("RECEIVED SPAWN PLAYER PACKET");
                 ServerSpawnPlayerPacket p = (ServerSpawnPlayerPacket) packet;
+                System.out.println("\n\nRECEIVED SPAWN PLAYER PACKET\n\n");
                 if (connection.getServer().getPlayerPositionManager().findById(p.getEntityId()) == null) {
                     connection.getServer().getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(), new WorldPosition(p.getX(), p.getY(), p.getZ()), p.getMetadata()));
                     System.out.print("PLAYER ENTITY NR: " + p.getUUID() + " GOT ADDED AS A PLAYER ENTITY\n");
@@ -126,7 +112,13 @@ public class ConListener implements SessionListener {
 
             else if(packet instanceof ServerEntityPositionPacket) {
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
-                connection.getServer().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p);
+                //System.out.println("GOT POSITION PACKET");
+                connection.getServer().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
+            }
+
+            else if (packet instanceof  ServerEntityPositionRotationPacket) {
+                ServerEntityPositionRotationPacket p = (ServerEntityPositionRotationPacket) packet;
+                connection.getServer().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
             }
 
             else if(packet instanceof ServerSpawnMobPacket) {
@@ -143,6 +135,20 @@ public class ConListener implements SessionListener {
                 ServerEntityDestroyPacket p = (ServerEntityDestroyPacket) packet;
                 if (connection.getServer().getPlayerPositionManager().findById(p.getEntityIds()[0]) != null) {
                     //System.out.println("TRYING TO DESTROY A PLAYER ENTITY");
+                }
+            }
+
+            else if (packet instanceof ServerUnloadChunkPacket) {
+                ServerUnloadChunkPacket  p = (ServerUnloadChunkPacket) packet;
+                System.out.println("RECEIVED CHUNK UNLOAD PACKET");
+            }
+
+            else if (packet instanceof  ServerEntityTeleportPacket) {
+                ServerEntityTeleportPacket p = (ServerEntityTeleportPacket) packet;
+                Player player = connection.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                if (player != null) {
+                    player.getPositon().updatePosition(p.getX(), p.getY(), p.getZ());
+                    System.out.println("Updated player pos with teleport packet");
                 }
             }
         }

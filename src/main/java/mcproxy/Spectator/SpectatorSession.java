@@ -30,12 +30,14 @@ public class SpectatorSession {
     private Session session;
     private SpectatorTicker ticker;
     private Spectator spectator;
+    private packetForwarder packetForwarder;
 
     public SpectatorSession(Session s, ObserverServer serv, Spectator spectator) {
         this.session = s;
         this.server = serv;
         this.spectator = spectator;
         this.ticker = new SpectatorTicker(this, server);
+        this.packetForwarder = new packetForwarder(SpectatorSession.this);
     }
 
     public Session getSession() {
@@ -94,22 +96,20 @@ public class SpectatorSession {
         return spectator.getPlayersInRange().contains(p);
     }
 
-    public void updatePlayersInRange() {
+    private void updatePlayersInRange() {
         ArrayList<Player> players =  server.getPlayerPositionManager().getEntityList();
         ArrayList<Player> inRange = new ArrayList<>();
 
         for (Player player: spectator.getPlayersInRange()) {
-            if (!isInRange(player)) {
+            if (!isInRange(player) || player.getId() == packetForwarder.followId) {
                 session.send(new ServerEntityDestroyPacket(player.getId()));
             }
         }
 
         for (Player player : players) {
-            if (isInRange(player)) {
+            if (isInRange(player) && !(player.getId() == packetForwarder.followId)) {
                 inRange.add(player);
-                //System.out.println("PLAYER IS NOW IN RANGE");
                 if (!isAlreadyInRange(player)) {
-                   // System.out.println("PLAYER WASNT IN RANGE YET");
                     session.send(new ServerSpawnPlayerPacket(player.getId(), player.getUUID(), player.getPositon().getX(), player.getPositon().getY(), player.getPositon().getZ(), 0, 0, player.getMetadata()));
                 }
             }
@@ -138,6 +138,10 @@ public class SpectatorSession {
         updatePlayersInRange();
     }
 
+    public packetForwarder getPacketForwarder() {
+        return packetForwarder;
+    }
+
     public SpectatorTicker getTicker() {
         return ticker;
     }
@@ -153,4 +157,6 @@ public class SpectatorSession {
     public Queue<Packet> getMessageQueue() {
         return messageQueue;
     }
+
+    public ObserverServer getServer() { return server; }
 }

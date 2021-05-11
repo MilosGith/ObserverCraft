@@ -10,6 +10,7 @@ public class Spectator {
     private int Id;
     private WorldPosition pos;
     private ArrayList<Player> playersInRange;
+    private String userName;
 
     public Spectator(WorldPosition pos, int id) {
         this.pos = pos;
@@ -31,5 +32,13 @@ public class Spectator {
 
     public int getId() {
         return Id;
+    }
+
+    public void setName(String name) {
+        userName = name;
+    }
+
+    public String getname() {
+        return userName;
     }
 }
