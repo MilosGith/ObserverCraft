@@ -89,7 +89,7 @@ public class SpectatorSession {
 
     public boolean isInRange(Player p) {
         double distance = server.getPlayerPositionManager().getDistance(spectator.getPosition().getX(), spectator.getPosition().getZ(), p.getPositon().getX(),  p.getPositon().getZ());
-        return distance < 30;
+        return distance < 175;
     }
 
     private boolean isAlreadyInRange(Player p) {

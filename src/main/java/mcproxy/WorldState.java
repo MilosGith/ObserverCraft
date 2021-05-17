@@ -14,8 +14,8 @@ import java.util.logging.Logger;
 public class WorldState {
 
     public WorldState() {
-
     }
+
     private Queue<Packet> chunkQueue = new ConcurrentLinkedDeque<>();
 
     private Queue<Packet> mobQueue = new ConcurrentLinkedDeque<>();
@@ -68,7 +68,6 @@ public class WorldState {
     public ServerNotifyClientPacket getRainStrength() {
         return rainStrength;
     }
-
 
     public void setServerTime(ServerUpdateTimePacket p) {
         serverTime = p;
