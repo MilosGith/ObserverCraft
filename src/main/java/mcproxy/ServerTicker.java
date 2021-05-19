@@ -1,18 +1,16 @@
-package mcproxy.Spectator;
+package mcproxy;
 
 import mcproxy.ObserverServer;
 import mcproxy.util.Scheduler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SpectatorTicker implements Runnable {
+public class ServerTicker implements Runnable {
 
-    private final SpectatorSession session;
-    private final ObserverServer server;
     private final AtomicBoolean running = new AtomicBoolean(false);
+    private ObserverServer server;
 
-    public SpectatorTicker(SpectatorSession ses, ObserverServer server) {
-        this.session = ses;
+    public ServerTicker(ObserverServer server) {
         this.server = server;
     }
 
@@ -39,8 +37,8 @@ public class SpectatorTicker implements Runnable {
         sched.start();
 
         while (running.get()) {
-             server.getSessionRegistry().getSessions().forEach(SpectatorSession::pulse);
-             //System.out.println("TICKING OBSERVER " + running.get() + "\n");
+            server.getSessionRegistry().pulse();
+            //System.out.println("ticking now");
             sched.sleepTick();
         }
     }

@@ -72,7 +72,7 @@ public class ObserverSessionListener extends SessionAdapter {
                             ServerPlayerListEntryPacket toCheck = (ServerPlayerListEntryPacket) player;
                             for (PlayerListEntry entry : toCheck.getEntries()) {
                                 if (entry.getProfile().getName().equals(tokenString[1])) {
-                                    target = server.getPlayerPositionManager().findByUUID(entry.getProfile().getId());
+                                    target = server.getWorldState().getPlayerPositionManager().findByUUID(entry.getProfile().getId());
                                     pos = target.getPositon();
                                 }
                             }

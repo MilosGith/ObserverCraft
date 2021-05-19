@@ -43,8 +43,6 @@ import java.net.Proxy;
 
 public class ObserverServer {
 
-    private PlayerPositionManager playerManager = new PlayerPositionManager();
-
     WorldState worldState = new WorldState();
 
     private SessionRegistry sessionRegistry = new SessionRegistry();
@@ -52,6 +50,8 @@ public class ObserverServer {
     private int observerCount = 0;
 
     private ServerConnection connection = null;
+
+    private ServerTicker ticker = new ServerTicker(this);
 
     public static final Logger logger = Logger.getLogger("Minecraft");
 
@@ -78,7 +78,8 @@ public class ObserverServer {
         server.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, new ServerLoginHandler() {
             @Override
             public void loggedIn(Session session) {
-                session.send(new ServerJoinGamePacket(observerCount, false, GameMode.CREATIVE, 0, Difficulty.PEACEFUL, 200, WorldType.DEFAULT, false));
+                System.out.println("WE LOGGED IN");
+                session.send(new ServerJoinGamePacket(observerCount, false, GameMode.CREATIVE, 0, Difficulty.PEACEFUL, 999, WorldType.DEFAULT, false));
             }
         });
 
@@ -98,7 +99,6 @@ public class ObserverServer {
             public void sessionRemoved(SessionRemovedEvent event) {
                 System.out.println("REMOVED SESSION");
                 MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
-                sessionRegistry.findBySession(event.getSession()).getTicker().stop();
                 sessionRegistry.removeBySession(event.getSession());
             }
         });
@@ -109,6 +109,7 @@ public class ObserverServer {
     public void run() throws InterruptedException {
         setupConnecton();
         setupServer();
+        ticker.start();
     }
 
     private void setupConnecton() throws InterruptedException {
@@ -126,10 +127,6 @@ public class ObserverServer {
 
     public SessionRegistry getSessionRegistry() {
         return sessionRegistry;
-    }
-
-    public PlayerPositionManager getPlayerPositionManager() {
-        return playerManager;
     }
 
     public int getObservercount() {

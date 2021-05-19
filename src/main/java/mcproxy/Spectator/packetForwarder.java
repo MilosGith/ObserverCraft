@@ -1,8 +1,8 @@
 package mcproxy.Spectator;
 
-import mcproxy.ObserverServer;
 import mcproxy.Player;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.*;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerChunkDataPacket;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
 public class packetForwarder {
@@ -16,10 +16,9 @@ public class packetForwarder {
 
     public void forwardPacket(Packet packet) {
         if (session.isReady()) {
-
             if (packet instanceof ServerEntityPositionPacket) {
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
-                Player player = session.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
@@ -37,7 +36,7 @@ public class packetForwarder {
             }
             else if (packet instanceof ServerEntityRotationPacket) {
                 ServerEntityRotationPacket p = (ServerEntityRotationPacket) packet;
-                Player player = session.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
@@ -54,7 +53,7 @@ public class packetForwarder {
 
             } else if (packet instanceof ServerEntityTeleportPacket){
                 ServerEntityTeleportPacket p = (ServerEntityTeleportPacket) packet;
-                Player player = session.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
@@ -70,7 +69,7 @@ public class packetForwarder {
 
             } else if (packet instanceof  ServerEntityHeadLookPacket) {
                 ServerEntityHeadLookPacket p = (ServerEntityHeadLookPacket) packet;
-                Player player = session.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
@@ -86,7 +85,7 @@ public class packetForwarder {
 
             } else if (packet instanceof  ServerEntityAnimationPacket) {
                 ServerEntityAnimationPacket p = (ServerEntityAnimationPacket) packet;
-                Player player = session.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
@@ -102,7 +101,7 @@ public class packetForwarder {
             } else if (packet instanceof ServerEntityPositionRotationPacket) {
                 //System.out.println("GOT ENTITY POSTION ROTATION PACKET");
                 ServerEntityPositionRotationPacket p = (ServerEntityPositionRotationPacket) packet;
-                Player player = session.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
@@ -114,6 +113,10 @@ public class packetForwarder {
                     } else {
                         session.getMessageQueue().add(packet);
                     }
+                }
+            } else if (packet instanceof ServerChunkDataPacket) {
+                if (!session.hasChunk(((ServerChunkDataPacket) packet).getColumn().getX(), ((ServerChunkDataPacket) packet).getColumn().getZ())) {
+                    session.getMessageQueue().add(packet);
                 }
             }
              else {

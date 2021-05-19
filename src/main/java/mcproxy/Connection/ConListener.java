@@ -60,8 +60,8 @@ public class ConListener implements SessionListener {
             else if(packet instanceof ServerSpawnPlayerPacket) {
                 ServerSpawnPlayerPacket p = (ServerSpawnPlayerPacket) packet;
                 System.out.println("\n\nRECEIVED SPAWN PLAYER PACKET\n\n");
-                if (connection.getServer().getPlayerPositionManager().findById(p.getEntityId()) == null) {
-                    connection.getServer().getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(), new WorldPosition(p.getX(), p.getY(), p.getZ()), p.getMetadata()));
+                if (connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId()) == null) {
+                    connection.getServer().getWorldState().getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(), new WorldPosition(p.getX(), p.getY(), p.getZ()), p.getMetadata()));
                     System.out.print("PLAYER ENTITY NR: " + p.getUUID() + " GOT ADDED AS A PLAYER ENTITY\n");
                 } else {
                     System.out.println("DID NOT ADD PLAYER THAT ALREADY EXISTED");
@@ -81,7 +81,7 @@ public class ConListener implements SessionListener {
                             ServerPlayerListEntryPacket toTest = (ServerPlayerListEntryPacket) player;
                             if (toTest.getEntries()[0].getProfile().getId().equals(p.getEntries()[0].getProfile().getId())) {
                                 worldState.getPlayersToJoin().remove(toTest);
-                                connection.getServer().getPlayerPositionManager().removeEntity(p.getEntries()[0].getProfile().getId());
+                                connection.getServer().getWorldState().getPlayerPositionManager().removeEntity(p.getEntries()[0].getProfile().getId());
                                 System.out.println("ID OF PLAYER WE REMOVED: " + toTest.getEntries()[0].getProfile().getId() + "\n");
                                 break;
                             }
@@ -113,12 +113,12 @@ public class ConListener implements SessionListener {
             else if(packet instanceof ServerEntityPositionPacket) {
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
                 //System.out.println("GOT POSITION PACKET");
-                connection.getServer().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
+                connection.getServer().getWorldState().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
             }
 
             else if (packet instanceof  ServerEntityPositionRotationPacket) {
                 ServerEntityPositionRotationPacket p = (ServerEntityPositionRotationPacket) packet;
-                connection.getServer().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
+                connection.getServer().getWorldState().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
             }
 
             else if(packet instanceof ServerSpawnMobPacket) {
@@ -133,7 +133,7 @@ public class ConListener implements SessionListener {
 
             else if (packet instanceof ServerEntityDestroyPacket) {
                 ServerEntityDestroyPacket p = (ServerEntityDestroyPacket) packet;
-                if (connection.getServer().getPlayerPositionManager().findById(p.getEntityIds()[0]) != null) {
+                if (connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityIds()[0]) != null) {
                     //System.out.println("TRYING TO DESTROY A PLAYER ENTITY");
                 }
             }
@@ -145,7 +145,7 @@ public class ConListener implements SessionListener {
 
             else if (packet instanceof  ServerEntityTeleportPacket) {
                 ServerEntityTeleportPacket p = (ServerEntityTeleportPacket) packet;
-                Player player = connection.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null) {
                     player.getPositon().updatePosition(p.getX(), p.getY(), p.getZ());
                     System.out.println("Updated player pos with teleport packet");
@@ -160,7 +160,7 @@ public class ConListener implements SessionListener {
             //s.getMessageQueue().add(packet);
             if (packet instanceof ServerEntityPositionPacket) {
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
-                Player player = connection.getServer().getPlayerPositionManager().findById(p.getEntityId());
+                Player player = connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (s.getSpectator().getPlayersInRange().contains(player)) {
                     System.out.println("THE PLAYER WE WANT TO UPDATE IS IN RANGE");
                     s.getMessageQueue().add(packet);

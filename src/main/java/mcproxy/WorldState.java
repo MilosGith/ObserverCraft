@@ -16,6 +16,8 @@ public class WorldState {
     public WorldState() {
     }
 
+    private PlayerPositionManager playerManager = new PlayerPositionManager();
+
     private Queue<Packet> chunkQueue = new ConcurrentLinkedDeque<>();
 
     private Queue<Packet> mobQueue = new ConcurrentLinkedDeque<>();
@@ -83,6 +85,10 @@ public class WorldState {
 
     public void setRaining(boolean bool) {
         isRaining = bool;
+    }
+
+    public PlayerPositionManager getPlayerPositionManager() {
+        return playerManager;
     }
 
 }

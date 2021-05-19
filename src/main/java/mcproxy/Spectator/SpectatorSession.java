@@ -3,7 +3,6 @@ package mcproxy.Spectator;
 import lombok.Getter;
 import mcproxy.ObserverServer;
 import mcproxy.Player;
-import mcproxy.Spectator.SpectatorTicker;
 import mcproxy.WorldState;
 import science.atlarge.opencraft.mcprotocollib.data.game.PlayerListEntry;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
@@ -12,12 +11,15 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.Serve
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerAbilitiesPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerChunkDataPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerSpawnPositionPacket;
 import science.atlarge.opencraft.packetlib.Session;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -27,8 +29,8 @@ public class SpectatorSession {
     private ObserverServer server;
     @Getter
     private final Queue<Packet> messageQueue = new ConcurrentLinkedDeque<>();
+    private final Set<Packet> receivedChunks = new HashSet<>();
     private Session session;
-    private SpectatorTicker ticker;
     private Spectator spectator;
     private packetForwarder packetForwarder;
 
@@ -36,7 +38,6 @@ public class SpectatorSession {
         this.session = s;
         this.server = serv;
         this.spectator = spectator;
-        this.ticker = new SpectatorTicker(this, server);
         this.packetForwarder = new packetForwarder(SpectatorSession.this);
     }
 
@@ -56,26 +57,25 @@ public class SpectatorSession {
         server.getConnection().chat("/chunks");
         System.out.println("CHUNKS SIZE AFTER REQUEST= " +  worldState.getChunkQueue().size());
         TimeUnit.SECONDS.sleep(1);
-        worldState.getChunkQueue().forEach(session::send);
+        sendChunks();
         System.out.print("SIZE OF PLAYER JOIN QUEUE: " + worldState.getPlayersToJoin().size() + "\n");
         sendWeather();
         spawnMobs();
         spawnPlayers();
-        ticker.start();
         this.isReady = true;
     }
 
     private void spawnPlayers() {
-        server.getPlayerPositionManager().printPlayerPositions();;
+        server.getWorldState().getPlayerPositionManager().printPlayerPositions();;
         Queue<Packet> toJoin = server.getWorldState().getPlayersToJoin();
         for (Packet p : toJoin) {
             // System.out.println("TRYINIG TO SEND PLAYER INFORMATION");
-            System.out.println("\n\nNUMBER OF PLAYERS: " + server.getPlayerPositionManager().getEntityList().size());
+            System.out.println("\n\nNUMBER OF PLAYERS: " +  server.getWorldState().getPlayerPositionManager().getEntityList().size());
             System.out.println("TO JOIN NUMBER: " + toJoin.size());
             ServerPlayerListEntryPacket lep = (ServerPlayerListEntryPacket) p;
             session.send(p);
             for (PlayerListEntry entry : lep.getEntries()) {
-                Player player = server.getPlayerPositionManager().findByUUID(entry.getProfile().getId());
+                Player player =  server.getWorldState().getPlayerPositionManager().findByUUID(entry.getProfile().getId());
                 if (player != null && isInRange(player)) {
                     System.out.println("FOUND A PLAYER TO SPAWN IN");
                     System.out.println(player.getPositon().toString());
@@ -87,8 +87,26 @@ public class SpectatorSession {
         }
     }
 
+    public boolean hasChunk (int x, int z) {
+        return getReceivedChunks().stream().anyMatch(o -> ((ServerChunkDataPacket) o).getColumn().getX() == x && ((ServerChunkDataPacket) o).getColumn().getZ() == z);
+    }
+
+    public void sendChunks() {
+        System.out.println("SENDING CHUNKS TO NEW CONNECTION");
+        System.out.println("CHUNK QUEUE SIZE: " + server.getWorldState().getChunkQueue().size());
+        server.getWorldState().getChunkQueue().forEach(c -> {
+            System.out.println("WERE SENDING A CHUNK NOW");
+            session.send(c);
+//            ChunkLocation loc = new ChunkLocation(((ServerChunkDataPacket) c).getColumn().getX(), ((ServerChunkDataPacket) c).getColumn().getZ());
+//            knownChunks.add(loc);
+//            System.out.println("Chunk loc x y: " + loc.getx() +  "  " + loc.getz());
+            receivedChunks.add(c);
+
+        });
+    }
+
     public boolean isInRange(Player p) {
-        double distance = server.getPlayerPositionManager().getDistance(spectator.getPosition().getX(), spectator.getPosition().getZ(), p.getPositon().getX(),  p.getPositon().getZ());
+        double distance =  server.getWorldState().getPlayerPositionManager().getDistance(spectator.getPosition().getX(), spectator.getPosition().getZ(), p.getPositon().getX(),  p.getPositon().getZ());
         return distance < 175;
     }
 
@@ -97,7 +115,7 @@ public class SpectatorSession {
     }
 
     private void updatePlayersInRange() {
-        ArrayList<Player> players =  server.getPlayerPositionManager().getEntityList();
+        ArrayList<Player> players =   server.getWorldState().getPlayerPositionManager().getEntityList();
         ArrayList<Player> inRange = new ArrayList<>();
 
         for (Player player: spectator.getPlayersInRange()) {
@@ -132,19 +150,22 @@ public class SpectatorSession {
     }
 
     public void pulse() {
-        Queue<Packet> toRemove = messageQueue;
-        toRemove.forEach(session::send);
-        getMessageQueue().removeAll(toRemove);
-        updatePlayersInRange();
+        if (isReady) {
+            Queue<Packet> toRemove = messageQueue;
+            toRemove.forEach(session::send);
+            getMessageQueue().removeAll(toRemove);
+            updatePlayersInRange();
+        }
+    }
+
+    public Set<Packet> getReceivedChunks() {
+        return receivedChunks;
     }
 
     public packetForwarder getPacketForwarder() {
         return packetForwarder;
     }
 
-    public SpectatorTicker getTicker() {
-        return ticker;
-    }
 
     public Spectator getSpectator() {
         return spectator;
