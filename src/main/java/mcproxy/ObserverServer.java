@@ -38,10 +38,13 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.Proxy;
 
 public class ObserverServer {
+
+    public static final Logger logger = Logger.getLogger("MCspectating");
 
     WorldState worldState = new WorldState();
 
@@ -53,8 +56,6 @@ public class ObserverServer {
 
     private ServerTicker ticker = new ServerTicker(this);
 
-    public static final Logger logger = Logger.getLogger("Minecraft");
-
     private static final boolean VERIFY_USERS = false;
     private static final String HOST = "127.0.0.1";
     private static final int PORT = 25566;
@@ -62,6 +63,7 @@ public class ObserverServer {
     private static final Proxy AUTH_PROXY = Proxy.NO_PROXY;
 
     public ObserverServer() {
+        logger.setLevel(Level.ALL);
     }
 
     private void setupServer() {
@@ -78,7 +80,6 @@ public class ObserverServer {
         server.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, new ServerLoginHandler() {
             @Override
             public void loggedIn(Session session) {
-                System.out.println("WE LOGGED IN");
                 session.send(new ServerJoinGamePacket(observerCount, false, GameMode.CREATIVE, 0, Difficulty.PEACEFUL, 999, WorldType.DEFAULT, false));
             }
         });
@@ -90,16 +91,13 @@ public class ObserverServer {
                 SpawnLocation spawn = worldState.getSpawn();
                 Spectator newSpectator = new Spectator(new WorldPosition(spawn.getPosition().getX(), spawn.getPosition().getY(), spawn.getPosition().getZ()), observerCount);
                 sessionRegistry.add(new SpectatorSession(event.getSession(), ObserverServer.this, newSpectator));
-
-                System.out.println("SESSION HAS BEEN ADDED TO SESSIONREGISTRY");
                 event.getSession().addListener(new ObserverSessionListener(ObserverServer.this));
             }
 
             @Override
             public void sessionRemoved(SessionRemovedEvent event) {
-                System.out.println("REMOVED SESSION");
-                MinecraftProtocol protocol = (MinecraftProtocol) event.getSession().getPacketProtocol();
                 sessionRegistry.removeBySession(event.getSession());
+                logger.log(Level.INFO, "Removed session");
             }
         });
 

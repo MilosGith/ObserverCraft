@@ -47,7 +47,7 @@ public class ConListener implements SessionListener {
 
             if (packet instanceof ServerSpawnPositionPacket) {
                 ServerSpawnPositionPacket p = (ServerSpawnPositionPacket) packet;
-                System.out.println("SPAWN LOCATION RECEIVED");
+            //    System.out.println("SPAWN LOCATION RECEIVED");
                 worldState.setSpawn(p.getPosition());
             }
 
@@ -59,39 +59,39 @@ public class ConListener implements SessionListener {
 
             else if(packet instanceof ServerSpawnPlayerPacket) {
                 ServerSpawnPlayerPacket p = (ServerSpawnPlayerPacket) packet;
-                System.out.println("\n\nRECEIVED SPAWN PLAYER PACKET\n\n");
+            //    System.out.println("\n\nRECEIVED SPAWN PLAYER PACKET\n\n");
                 if (connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId()) == null) {
                     connection.getServer().getWorldState().getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(), new WorldPosition(p.getX(), p.getY(), p.getZ()), p.getMetadata()));
-                    System.out.print("PLAYER ENTITY NR: " + p.getUUID() + " GOT ADDED AS A PLAYER ENTITY\n");
+               //     System.out.print("PLAYER ENTITY NR: " + p.getUUID() + " GOT ADDED AS A PLAYER ENTITY\n");
                 } else {
-                    System.out.println("DID NOT ADD PLAYER THAT ALREADY EXISTED");
+              //      System.out.println("DID NOT ADD PLAYER THAT ALREADY EXISTED");
                 }
 
             }
 
             else if (packet instanceof ServerPlayerListEntryPacket) {
-                System.out.println("RECEIVED PLAYER LIST ENTRY PACKET LALALALALA");
+            //    System.out.println("RECEIVED PLAYER LIST ENTRY PACKET LALALALALA");
                 ServerPlayerListEntryPacket p = (ServerPlayerListEntryPacket) packet;
                 switch (p.getAction()) {
                     case REMOVE_PLAYER:
-                        System.out.println("size before remove player: " + worldState.getPlayersToJoin().size() + "\n");
+                 //       System.out.println("size before remove player: " + worldState.getPlayersToJoin().size() + "\n");
                         Queue<Packet> players = worldState.getPlayersToJoin();
-                        System.out.println("ID OF PLAYER WE WANT TO REMOVE: " + p.getEntries()[0].getProfile().getId() + "\n");
+                  //      System.out.println("ID OF PLAYER WE WANT TO REMOVE: " + p.getEntries()[0].getProfile().getId() + "\n");
                         for (Packet player : players) {
                             ServerPlayerListEntryPacket toTest = (ServerPlayerListEntryPacket) player;
                             if (toTest.getEntries()[0].getProfile().getId().equals(p.getEntries()[0].getProfile().getId())) {
                                 worldState.getPlayersToJoin().remove(toTest);
                                 connection.getServer().getWorldState().getPlayerPositionManager().removeEntity(p.getEntries()[0].getProfile().getId());
-                                System.out.println("ID OF PLAYER WE REMOVED: " + toTest.getEntries()[0].getProfile().getId() + "\n");
+                        //        System.out.println("ID OF PLAYER WE REMOVED: " + toTest.getEntries()[0].getProfile().getId() + "\n");
                                 break;
                             }
                         }
-                        System.out.println("size after remove player: " + worldState.getPlayersToJoin().size() + "\n");
+                     //   System.out.println("size after remove player: " + worldState.getPlayersToJoin().size() + "\n");
                     break;
                     case ADD_PLAYER:
-                        System.out.println("size before adding player: " + worldState.getPlayersToJoin().size() + "\n");
+                   //     System.out.println("size before adding player: " + worldState.getPlayersToJoin().size() + "\n");
                         worldState.getPlayersToJoin().add(p);
-                        System.out.println("size after adding player: " + worldState.getPlayersToJoin().size() + "\n");
+                     //   System.out.println("size after adding player: " + worldState.getPlayersToJoin().size() + "\n");
                 }
             }
 
@@ -140,7 +140,7 @@ public class ConListener implements SessionListener {
 
             else if (packet instanceof ServerUnloadChunkPacket) {
                 ServerUnloadChunkPacket  p = (ServerUnloadChunkPacket) packet;
-                System.out.println("RECEIVED CHUNK UNLOAD PACKET");
+            //    System.out.println("RECEIVED CHUNK UNLOAD PACKET");
             }
 
             else if (packet instanceof  ServerEntityTeleportPacket) {
@@ -148,30 +148,15 @@ public class ConListener implements SessionListener {
                 Player player = connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null) {
                     player.getPositon().updatePosition(p.getX(), p.getY(), p.getZ());
-                    System.out.println("Updated player pos with teleport packet");
+                //    System.out.println("Updated player pos with teleport packet");
                 }
             }
         }
     }
 
-
-    public void forwardPacket(Packet packet) {
-        connection.getServer().getSessionRegistry().getSessions().forEach(s -> {
-            //s.getMessageQueue().add(packet);
-            if (packet instanceof ServerEntityPositionPacket) {
-                ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
-                Player player = connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
-                if (s.getSpectator().getPlayersInRange().contains(player)) {
-                    System.out.println("THE PLAYER WE WANT TO UPDATE IS IN RANGE");
-                    s.getMessageQueue().add(packet);
-                }
-            }
-        });
-    }
-
     @Override
     public void packetSending(PacketSendingEvent packetSendingEvent) {
-        System.out.println("Sending non-game packet: " + packetSendingEvent.getPacket().getClass().getName());
+       // System.out.println("Sending non-game packet: " + packetSendingEvent.getPacket().getClass().getName());
     }
 
     @Override

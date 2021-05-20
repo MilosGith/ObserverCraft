@@ -21,6 +21,7 @@ import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.sql.SQLSyntaxErrorException;
 import java.util.Queue;
+import java.util.logging.Level;
 
 public class ObserverSessionListener extends SessionAdapter {
     private ObserverServer server;
@@ -38,6 +39,7 @@ public class ObserverSessionListener extends SessionAdapter {
             LoginStartPacket p = (LoginStartPacket) packet;
             Spectator spectator = server.getSessionRegistry().findBySession(event.getSession()).getSpectator();
             spectator.setName(p.getUsername());
+            server.logger.log(Level.INFO, "User: " + p.getUsername() + "joined as a spectator");
         }
 
 

@@ -20,7 +20,6 @@ public final class SessionRegistry {
     public void removeBySession(Session session) {
         SpectatorSession s = findBySession(session);
         this.remove(s);
-        System.out.println("removed a session from the registry");
     }
 
     public SpectatorSession findBySession(Session session) {

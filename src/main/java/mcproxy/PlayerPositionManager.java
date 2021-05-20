@@ -15,14 +15,14 @@ public class PlayerPositionManager {
     }
 
     public Player findByUUID(UUID id) {
-        System.out.println("TRYING TO FIND PLAYER BY UUID, SIZE OF LIST: " + entityList.size() + "\n");
+       // System.out.println("TRYING TO FIND PLAYER BY UUID, SIZE OF LIST: " + entityList.size() + "\n");
         Player found = null;
         for (Player entity : entityList) {
-            System.out.println("ID TO FIND: " + id + "\n");
-            System.out.println("COMPARING ID TO: " + entity.getUUID() + "\n");
+       //     System.out.println("ID TO FIND: " + id + "\n");
+        //    System.out.println("COMPARING ID TO: " + entity.getUUID() + "\n");
             if (entity.getUUID().equals(id)) {
                 //System.out.println("COMPARING ID TO: " + entity.getUUID() + "\n");
-                System.out.println("FOUND THE PLAYER BY UUID");
+           //     System.out.println("FOUND THE PLAYER BY UUID");
                 found = entity;
                 break;
             }
@@ -64,7 +64,7 @@ public class PlayerPositionManager {
 
     public void printPlayerPositions() {
         entityList.forEach(p -> {
-            System.out.println("player position request: " +  p.getPositon().toString() +  "\n");
+        //    System.out.println("player position request: " +  p.getPositon().toString() +  "\n");
         });
     }
 }

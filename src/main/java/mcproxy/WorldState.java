@@ -40,7 +40,7 @@ public class WorldState {
 
     public void setSpawn(Position pos) {
         spawn = new SpawnLocation(pos);
-        System.out.println("spawn is set");
+        //System.out.println("spawn is set");
     }
 
 
