@@ -16,13 +16,14 @@ import java.util.logging.Logger;
 public class ServerConnection {
     private ObserverServer server;
     private MinecraftProtocol protocol = new MinecraftProtocol("observer");
-    private String host = "127.0.0.1";
+    private String host = null;
     private int port = 25565;
     private Client client;
-    public static final Logger logger = Logger.getLogger("Proxy");
 
-    public ServerConnection(ObserverServer server) {
+    public ServerConnection(ObserverServer server, String serverIP) {
         this.server = server;
+        this.host = serverIP;
+
         this.client = new Client(host, port, protocol, new TcpSessionFactory(true));
         this.client.getSession().addListener(new ConListener(this));
     }
@@ -32,25 +33,17 @@ public class ServerConnection {
         return client.getSession();
     }
 
-    public Logger getLogger() {
-        return logger;
-    }
-
     public void connect() {
         client.getSession().connect();
         if (client.getSession().isConnected()) {
-            logger.log(Level.INFO,"established connection to MC server");
+            ObserverServer.logger.log(Level.INFO,"established connection to MC server");
         } else {
-            logger.log(Level.WARNING,"mc server not online, cant connect");
+            ObserverServer.logger.log(Level.WARNING,"mc server not online, cant connect");
         }
     }
 
     public void chat (String msg) {
         client.getSession().send(new ClientChatPacket(msg));
-    }
-
-    public void send(Packet packet) {
-        client.getSession().send(packet);
     }
 
     public ObserverServer getServer() {

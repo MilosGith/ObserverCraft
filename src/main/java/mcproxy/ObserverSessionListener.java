@@ -39,7 +39,7 @@ public class ObserverSessionListener extends SessionAdapter {
             LoginStartPacket p = (LoginStartPacket) packet;
             Spectator spectator = server.getSessionRegistry().findBySession(event.getSession()).getSpectator();
             spectator.setName(p.getUsername());
-            server.logger.log(Level.INFO, "User: " + p.getUsername() + "joined as a spectator");
+            ObserverServer.logger.log(Level.INFO, "User: " + p.getUsername() + "joined as a spectator");
         }
 
 

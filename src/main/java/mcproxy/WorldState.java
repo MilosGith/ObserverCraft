@@ -2,19 +2,25 @@ package mcproxy;
 
 import mcproxy.Connection.ServerConnection;
 import mcproxy.util.SpawnLocation;
+import org.bukkit.event.player.PlayerJoinEvent;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerJoinGamePacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerNotifyClientPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerUpdateTimePacket;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
+import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 public class WorldState {
 
     public WorldState() {
     }
+
+    public ReentrantLock chunkLock = new ReentrantLock();
 
     private PlayerPositionManager playerManager = new PlayerPositionManager();
 
@@ -43,10 +49,14 @@ public class WorldState {
         //System.out.println("spawn is set");
     }
 
-
     public Queue<Packet> getChunkQueue() {
         return chunkQueue;
     }
+
+    public ArrayList<Packet> getChunkCopy() {
+        return new ArrayList<>(chunkQueue);
+    }
+
 
     public Queue<Packet> getMobQueue() {
         return mobQueue;
@@ -91,4 +101,7 @@ public class WorldState {
         return playerManager;
     }
 
+    public ReentrantLock getChunkLock() {
+        return chunkLock;
+    }
 }

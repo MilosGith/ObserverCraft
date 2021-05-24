@@ -3,7 +3,11 @@ package mcproxy;
 import mcproxy.Spectator.SpectatorSession;
 import science.atlarge.opencraft.packetlib.Session;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class SessionRegistry {
 
@@ -33,10 +37,15 @@ public final class SessionRegistry {
         return obsSession;
     }
 
-    public void pulse() {
-        sessions.forEach(SpectatorSession::pulse);
-    }
     public ArrayList<SpectatorSession> getSessions() {
         return sessions;
+    }
+
+    private ArrayList<SpectatorSession> getSessionsCopy() {
+        return new ArrayList<>(sessions);
+    }
+
+    public void pulse() {
+        getSessionsCopy().forEach(SpectatorSession::pulse);
     }
 }

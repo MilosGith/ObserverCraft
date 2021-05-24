@@ -23,9 +23,6 @@ public class ServerTicker implements Runnable {
         t.start();
     }
 
-    /**
-     * Stops the BotTicker.
-     */
     public void stop() {
       //  System.out.println("CALLED SOTP ON THE  OBSERVER TICKER");
         running.set(false);

@@ -33,20 +33,20 @@ import science.atlarge.opencraft.packetlib.packet.Packet;
 import science.atlarge.opencraft.packetlib.tcp.TcpSessionFactory;
 
 
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.Proxy;
+import java.util.logging.SimpleFormatter;
 
 public class ObserverServer {
 
     public static final Logger logger = Logger.getLogger("MCspectating");
 
-    WorldState worldState = new WorldState();
+    private WorldState worldState = new WorldState();
 
     private SessionRegistry sessionRegistry = new SessionRegistry();
 
@@ -56,14 +56,28 @@ public class ObserverServer {
 
     private ServerTicker ticker = new ServerTicker(this);
 
+    private String logFile = null;
+
     private static final boolean VERIFY_USERS = false;
     private static final String HOST = "127.0.0.1";
+    private String serverIP = null;
     private static final int PORT = 25566;
     private static final Proxy PROXY = Proxy.NO_PROXY;
     private static final Proxy AUTH_PROXY = Proxy.NO_PROXY;
 
-    public ObserverServer() {
-        logger.setLevel(Level.ALL);
+    public ObserverServer(String ip, String log) throws IOException {
+        serverIP = ip;
+        logFile = log;
+
+        if (logFile != null) {
+            File test = new File(logFile);
+            if (test.exists()) {
+                FileHandler fh = new FileHandler(logFile, true);   // true forces append mode
+                SimpleFormatter sf = new SimpleFormatter();
+                fh.setFormatter(sf);
+                logger.addHandler(fh);
+            }
+        }
     }
 
     private void setupServer() {
@@ -110,8 +124,13 @@ public class ObserverServer {
         ticker.start();
     }
 
+    public void shutDown() {
+        ticker.start();
+        connection.disconnect();
+    }
+
     private void setupConnecton() throws InterruptedException {
-        this.connection = new ServerConnection(this);
+        this.connection = new ServerConnection(this, serverIP);
         connection.connect();
         if (connection.getSession().isConnected()) {
             TimeUnit.SECONDS.sleep(1);
@@ -134,6 +153,5 @@ public class ObserverServer {
     public void incrementObserverCount() {
         observerCount++;
     }
-
 
 }

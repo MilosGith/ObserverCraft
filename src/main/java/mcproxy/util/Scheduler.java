@@ -77,7 +77,7 @@ public class Scheduler {
         long nowNanos = System.nanoTime();
         long nextTickNanos = startNanos + (tickNumber * tickNanos);
         long toSleepNanos = nextTickNanos - nowNanos;
-
+        //System.out.println(toSleepNanos);
         if (toSleepNanos < 0) {
             return false; // Skip a tick
         }

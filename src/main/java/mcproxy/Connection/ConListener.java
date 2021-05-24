@@ -1,22 +1,18 @@
 package mcproxy.Connection;
 
 
-import mcproxy.Player;
 import mcproxy.ObserverServer;
-import mcproxy.Spectator.Spectator;
-import mcproxy.Spectator.SpectatorSession;
+import mcproxy.Player;
 import mcproxy.WorldState;
 import mcproxy.util.WorldPosition;
+import org.bukkit.material.Observer;
 import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
 import science.atlarge.opencraft.mcprotocollib.data.SubProtocol;
-import science.atlarge.opencraft.mcprotocollib.data.game.PlayerListEntry;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerPlayerListEntryPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.*;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnMobPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.*;
-import science.atlarge.opencraft.packetlib.Server;
 import science.atlarge.opencraft.packetlib.event.session.*;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
@@ -47,30 +43,23 @@ public class ConListener implements SessionListener {
 
             if (packet instanceof ServerSpawnPositionPacket) {
                 ServerSpawnPositionPacket p = (ServerSpawnPositionPacket) packet;
-            //    System.out.println("SPAWN LOCATION RECEIVED");
                 worldState.setSpawn(p.getPosition());
             }
 
             else if (packet instanceof ServerChunkDataPacket) {
                 ServerChunkDataPacket p = (ServerChunkDataPacket) packet;
                 worldState.getChunkQueue().add(p);
-                //System.out.println("RECEIVED A CHUNK PACKET");
             }
 
             else if(packet instanceof ServerSpawnPlayerPacket) {
                 ServerSpawnPlayerPacket p = (ServerSpawnPlayerPacket) packet;
-            //    System.out.println("\n\nRECEIVED SPAWN PLAYER PACKET\n\n");
                 if (connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId()) == null) {
                     connection.getServer().getWorldState().getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(), new WorldPosition(p.getX(), p.getY(), p.getZ()), p.getMetadata()));
-               //     System.out.print("PLAYER ENTITY NR: " + p.getUUID() + " GOT ADDED AS A PLAYER ENTITY\n");
-                } else {
-              //      System.out.println("DID NOT ADD PLAYER THAT ALREADY EXISTED");
                 }
 
             }
 
             else if (packet instanceof ServerPlayerListEntryPacket) {
-            //    System.out.println("RECEIVED PLAYER LIST ENTRY PACKET LALALALALA");
                 ServerPlayerListEntryPacket p = (ServerPlayerListEntryPacket) packet;
                 switch (p.getAction()) {
                     case REMOVE_PLAYER:
@@ -112,7 +101,6 @@ public class ConListener implements SessionListener {
 
             else if(packet instanceof ServerEntityPositionPacket) {
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
-                //System.out.println("GOT POSITION PACKET");
                 connection.getServer().getWorldState().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
             }
 
@@ -134,13 +122,11 @@ public class ConListener implements SessionListener {
             else if (packet instanceof ServerEntityDestroyPacket) {
                 ServerEntityDestroyPacket p = (ServerEntityDestroyPacket) packet;
                 if (connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityIds()[0]) != null) {
-                    //System.out.println("TRYING TO DESTROY A PLAYER ENTITY");
                 }
             }
 
             else if (packet instanceof ServerUnloadChunkPacket) {
                 ServerUnloadChunkPacket  p = (ServerUnloadChunkPacket) packet;
-            //    System.out.println("RECEIVED CHUNK UNLOAD PACKET");
             }
 
             else if (packet instanceof  ServerEntityTeleportPacket) {
@@ -148,7 +134,6 @@ public class ConListener implements SessionListener {
                 Player player = connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null) {
                     player.getPositon().updatePosition(p.getX(), p.getY(), p.getZ());
-                //    System.out.println("Updated player pos with teleport packet");
                 }
             }
         }
@@ -166,16 +151,17 @@ public class ConListener implements SessionListener {
 
     @Override
     public void connected(ConnectedEvent connectedEvent) {
-        connection.getLogger().log(Level.INFO, "Connection to minecraft server established");
+        ObserverServer.logger.log(Level.INFO, "Connection to minecraft server established");
     }
 
     @Override
     public void disconnecting(DisconnectingEvent disconnectingEvent) {
-        connection.getLogger().log(Level.INFO, "Disconnecting from server, reason:" + disconnectingEvent.getReason().toString() + "\n");
+        System.out.println(disconnectingEvent.getCause().toString());
+        ObserverServer.logger.info( "Disconnecting from server, reason:" + disconnectingEvent.getReason().toString() + "\n");
     }
 
     @Override
     public void disconnected(DisconnectedEvent disconnectedEvent) {
-        connection.getLogger().log(Level.INFO, "Disconnected from server\n");
+        ObserverServer.logger.info("Disconnected from server\n");
     }
 }
