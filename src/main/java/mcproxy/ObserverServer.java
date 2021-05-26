@@ -125,7 +125,7 @@ public class ObserverServer {
     }
 
     public void shutDown() {
-        ticker.start();
+        ticker.stop();
         connection.disconnect();
     }
 

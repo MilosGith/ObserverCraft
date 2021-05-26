@@ -5,6 +5,8 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.*;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerChunkDataPacket;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
+import java.util.ConcurrentModificationException;
+
 public class packetForwarder {
     private boolean followMode = false;
     int followId = -1;
@@ -15,6 +17,14 @@ public class packetForwarder {
     }
 
     public void forwardPacket(Packet packet) {
+        if (packet instanceof ServerChunkDataPacket) {
+            if (!session.hasChunk(((ServerChunkDataPacket) packet).getColumn().getX(), ((ServerChunkDataPacket) packet).getColumn().getZ())) {
+                  session.getReceivedChunks().add(packet);
+                  session.getMessageQueue().add(packet);
+            }
+            return;
+        }
+
         if (session.isReady()) {
             if (packet instanceof ServerEntityPositionPacket) {
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
@@ -114,13 +124,10 @@ public class packetForwarder {
                         session.getMessageQueue().add(packet);
                     }
                 }
-            } else if (packet instanceof ServerChunkDataPacket) {
-                if (!session.hasChunk(((ServerChunkDataPacket) packet).getColumn().getX(), ((ServerChunkDataPacket) packet).getColumn().getZ())) {
-                    session.getMessageQueue().add(packet);
-                }
             }
              else {
-                session.getMessageQueue().add(packet);
+                 //System.out.println("ADDING: " + packet.getClass().toString() + " PACKET TO QUEUE");
+                 session.getMessageQueue().add(packet);
             }
         }
     }

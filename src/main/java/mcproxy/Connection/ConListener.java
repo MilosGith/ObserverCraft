@@ -22,7 +22,7 @@ import java.util.logging.Level;
 
 public class ConListener implements SessionListener {
     private ServerConnection connection;
-    private int count = 0;
+    private long count = 0;
 
     public ConListener(ServerConnection connection) {
         this.connection = connection;
@@ -32,11 +32,13 @@ public class ConListener implements SessionListener {
         WorldState worldState = connection.getServer().getWorldState();
 
         Packet packet = pre.getPacket();
+        //count++;
         //System.out.println("received package: ," + pre.getPacket().getClass().getName().toString() +  "   | Number packages:" + count);
-        // count++;
+
         MinecraftProtocol pro = (MinecraftProtocol) pre.getSession().getPacketProtocol();
 
         if (pro.getSubProtocol() == SubProtocol.GAME) {
+            count ++;
             connection.getServer().getSessionRegistry().getSessions().forEach(s -> {
                 s.getPacketForwarder().forwardPacket(packet);
             });
@@ -44,11 +46,6 @@ public class ConListener implements SessionListener {
             if (packet instanceof ServerSpawnPositionPacket) {
                 ServerSpawnPositionPacket p = (ServerSpawnPositionPacket) packet;
                 worldState.setSpawn(p.getPosition());
-            }
-
-            else if (packet instanceof ServerChunkDataPacket) {
-                ServerChunkDataPacket p = (ServerChunkDataPacket) packet;
-                worldState.getChunkQueue().add(p);
             }
 
             else if(packet instanceof ServerSpawnPlayerPacket) {
@@ -100,6 +97,7 @@ public class ConListener implements SessionListener {
             }
 
             else if(packet instanceof ServerEntityPositionPacket) {
+
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
                 connection.getServer().getWorldState().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
             }
@@ -110,6 +108,7 @@ public class ConListener implements SessionListener {
             }
 
             else if(packet instanceof ServerSpawnMobPacket) {
+                //System.out.println("GOT MOB PACKET");
                 ServerSpawnMobPacket p = (ServerSpawnMobPacket) packet;
                 worldState.getMobQueue().add(p);
             }
@@ -120,13 +119,10 @@ public class ConListener implements SessionListener {
             }
 
             else if (packet instanceof ServerEntityDestroyPacket) {
+                System.out.println("GOT DESTROY PACKET");
                 ServerEntityDestroyPacket p = (ServerEntityDestroyPacket) packet;
                 if (connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityIds()[0]) != null) {
                 }
-            }
-
-            else if (packet instanceof ServerUnloadChunkPacket) {
-                ServerUnloadChunkPacket  p = (ServerUnloadChunkPacket) packet;
             }
 
             else if (packet instanceof  ServerEntityTeleportPacket) {
@@ -162,6 +158,8 @@ public class ConListener implements SessionListener {
 
     @Override
     public void disconnected(DisconnectedEvent disconnectedEvent) {
+        connection.getServer().shutDown();
+        ObserverServer.logger.info("total packets received: " + count);
         ObserverServer.logger.info("Disconnected from server\n");
     }
 }

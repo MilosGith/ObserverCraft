@@ -30,11 +30,12 @@ public class ServerTicker implements Runnable {
 
     @Override
     public void run() {
-        Scheduler sched = new Scheduler(50);
+        Scheduler sched = new Scheduler(100);
         sched.start();
 
         while (running.get()) {
             server.getSessionRegistry().pulse();
+            //server.getWorldState().getPlayerPositionManager().getEntityList().forEach(player -> System.out.println(player.getPositon().toString()));
             //System.out.println("ticking now");
             sched.sleepTick();
         }

@@ -46,8 +46,8 @@ public class SpectatorSession {
     }
 
     public void joinSpectator() throws InterruptedException {
+        requestChunks();
         spawnSpectator();
-        sendChunks();
         sendWeather();
         spawnMobs();
         spawnPlayers();
@@ -62,7 +62,6 @@ public class SpectatorSession {
         session.send(new ServerPlayerAbilitiesPacket(true, true, true, true, 0.2f, 1f));
     }
     private void spawnPlayers() {
-        server.getWorldState().getPlayerPositionManager().printPlayerPositions();;
         Queue<Packet> toJoin = server.getWorldState().getPlayersToJoin();
         for (Packet p : toJoin) {
             ServerPlayerListEntryPacket lep = (ServerPlayerListEntryPacket) p;
@@ -79,19 +78,11 @@ public class SpectatorSession {
     }
 
     public boolean hasChunk (int x, int z) {
-        return getReceivedChunks().stream().anyMatch(o -> ((ServerChunkDataPacket) o).getColumn().getX() == x && ((ServerChunkDataPacket) o).getColumn().getZ() == z);
+        return getReceivedChunksCopy().stream().anyMatch(o -> ((ServerChunkDataPacket) o).getColumn().getX() == x && ((ServerChunkDataPacket) o).getColumn().getZ() == z);
     }
 
-    public void sendChunks() throws InterruptedException {
-        server.getWorldState().getChunkLock().lock();
-        server.getWorldState().getChunkQueue().clear();
+    public void requestChunks() {
         server.getConnection().chat("/chunks");
-        TimeUnit.SECONDS.sleep(1);
-        server.getWorldState().getChunkCopy().forEach(c -> {
-            session.send(c);
-            receivedChunks.add(c);
-        });
-        server.getWorldState().getChunkLock().unlock();
     }
 
     public boolean isInRange(Player p) {
@@ -149,6 +140,10 @@ public class SpectatorSession {
 
     public Set<Packet> getReceivedChunks() {
         return receivedChunks;
+    }
+
+    public Set<Packet> getReceivedChunksCopy() {
+        return new HashSet<>(receivedChunks);
     }
 
     public packetForwarder getPacketForwarder() {
