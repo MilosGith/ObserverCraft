@@ -101,6 +101,8 @@ public class ObserverSessionListener extends SessionAdapter {
                     String toSend = message.toString();
                     server.getConnection().chat(toSend);
                     break;
+                default:
+                    server.getConnection().chat(p.getMessage());
             }
         }
     }

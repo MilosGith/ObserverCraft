@@ -6,15 +6,17 @@ import science.atlarge.opencraft.packetlib.Session;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class SessionRegistry {
 
-    private final ArrayList<SpectatorSession> sessions = new ArrayList<>();
+    private final ConcurrentHashMap<SpectatorSession, Boolean> sessions = new ConcurrentHashMap<>();
 
     public void add(SpectatorSession session) {
-        sessions.add(session);
+        sessions.put(session, true);
     }
 
     public void remove(SpectatorSession session) {
@@ -28,24 +30,22 @@ public final class SessionRegistry {
 
     public SpectatorSession findBySession(Session session) {
         SpectatorSession obsSession = null;
-        for (int i = 0; i < sessions.size(); i++) {
-            if (sessions.get(i).getSession() == session) {
-               // System.out.println("FOUND SESSION TO REMOVE FROM SESSIONREGISTRY");
-                obsSession = sessions.get(i);
-            }
+        for (SpectatorSession f : sessions.keySet()) {
+            if (f.getSession() == session)
+                return f;
         }
         return obsSession;
     }
 
-    public ArrayList<SpectatorSession> getSessions() {
+    public ConcurrentHashMap<SpectatorSession, Boolean> getSessions() {
         return sessions;
     }
 
-    private ArrayList<SpectatorSession> getSessionsCopy() {
-        return new ArrayList<>(sessions);
-    }
+//    private ArrayList<SpectatorSession> getSessionsCopy() {
+//        return new ArrayList<>(sessions);
+//    }
 
     public void pulse() {
-        getSessionsCopy().forEach(SpectatorSession::pulse);
+        sessions.keySet().forEach(SpectatorSession::pulse);
     }
 }

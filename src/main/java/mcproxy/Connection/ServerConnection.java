@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class ServerConnection {
     private ObserverServer server;
-    private MinecraftProtocol protocol = new MinecraftProtocol("observer");
+    private MinecraftProtocol protocol = new MinecraftProtocol("OBSERVER-" + UUID.randomUUID().toString().substring(0, 6));
     private String host = null;
     private int port = 25565;
     private Client client;

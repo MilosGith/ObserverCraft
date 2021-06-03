@@ -39,7 +39,7 @@ public class ConListener implements SessionListener {
 
         if (pro.getSubProtocol() == SubProtocol.GAME) {
             count ++;
-            connection.getServer().getSessionRegistry().getSessions().forEach(s -> {
+            connection.getServer().getSessionRegistry().getSessions().keySet().forEach(s -> {
                 s.getPacketForwarder().forwardPacket(packet);
             });
 
