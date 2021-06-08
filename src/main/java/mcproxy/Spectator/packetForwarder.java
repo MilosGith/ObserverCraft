@@ -1,6 +1,7 @@
 package mcproxy.Spectator;
 
 import mcproxy.Player;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerChatPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.*;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerChunkDataPacket;
 import science.atlarge.opencraft.packetlib.packet.Packet;
@@ -41,8 +42,6 @@ public class packetForwarder {
                         session.getMessageQueue().add(packet);
                     }
                 }
-
-
             }
             else if (packet instanceof ServerEntityRotationPacket) {
                 ServerEntityRotationPacket p = (ServerEntityRotationPacket) packet;
@@ -124,6 +123,9 @@ public class packetForwarder {
                         session.getMessageQueue().add(packet);
                     }
                 }
+            } else if (packet instanceof ServerChatPacket) {
+                ServerChatPacket p = (ServerChatPacket) packet;
+                session.getSession().send(new ServerChatPacket(p.getMessage()));
             }
              else {
                  //System.out.println("ADDING: " + packet.getClass().toString() + " PACKET TO QUEUE");

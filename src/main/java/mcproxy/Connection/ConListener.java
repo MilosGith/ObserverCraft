@@ -17,12 +17,14 @@ import science.atlarge.opencraft.packetlib.event.session.*;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
 
 public class ConListener implements SessionListener {
     private ServerConnection connection;
     private long count = 0;
+    private ConcurrentLinkedQueue<Packet> toHandle = new ConcurrentLinkedQueue<>();
 
     public ConListener(ServerConnection connection) {
         this.connection = connection;
@@ -97,7 +99,6 @@ public class ConListener implements SessionListener {
             }
 
             else if(packet instanceof ServerEntityPositionPacket) {
-
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
                 connection.getServer().getWorldState().getPlayerPositionManager().updatEntityPosition(p.getEntityId(), p.getMovementX(), p.getMovementY(), p.getMovementZ());
             }
@@ -119,7 +120,7 @@ public class ConListener implements SessionListener {
             }
 
             else if (packet instanceof ServerEntityDestroyPacket) {
-                System.out.println("GOT DESTROY PACKET");
+                //System.out.println("GOT DESTROY PACKET");
                 ServerEntityDestroyPacket p = (ServerEntityDestroyPacket) packet;
                 if (connection.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityIds()[0]) != null) {
                 }

@@ -102,7 +102,7 @@ public class ObserverSessionListener extends SessionAdapter {
                     server.getConnection().chat(toSend);
                     break;
                 default:
-                    server.getConnection().chat(p.getMessage());
+                    server.getConnection().chat(chatMsg);
             }
         }
     }

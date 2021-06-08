@@ -1,8 +1,10 @@
 package mcproxy;
 
+import com.atlarge.yscollector.YSCollector;
 import mcproxy.ObserverServer;
 import mcproxy.util.Scheduler;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServerTicker implements Runnable {
@@ -27,16 +29,30 @@ public class ServerTicker implements Runnable {
       //  System.out.println("CALLED SOTP ON THE  OBSERVER TICKER");
         running.set(false);
     }
+    private void startMeasurement(String key, String help) {
+        server.getEventLogger().start(key);
+    }
+
+    private void stopMeasurement(String key) {
+        server.getEventLogger().stop(key);
+    }
 
     @Override
     public void run() {
-        Scheduler sched = new Scheduler(100);
+        Scheduler sched = new Scheduler(50);
         sched.start();
 
         while (running.get()) {
+            startMeasurement("tick", "The duration of a tick");
             server.getSessionRegistry().pulse();
+            try {
+                Thread.sleep(server.getSpectatorCount());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             //server.getWorldState().getPlayerPositionManager().getEntityList().forEach(player -> System.out.println(player.getPositon().toString()));
             //System.out.println("ticking now");
+            stopMeasurement("tick");
             sched.sleepTick();
         }
     }
