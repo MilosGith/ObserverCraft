@@ -43,13 +43,13 @@ public class ObserverSessionListener extends SessionAdapter {
         }
 
 
-        if (packet instanceof ClientPlayerPositionPacket) {
+        else if (packet instanceof ClientPlayerPositionPacket) {
             ClientPlayerPositionPacket p = (ClientPlayerPositionPacket) packet;
             SpectatorSession session = server.getSessionRegistry().findBySession(event.getSession());
-            session.getSpectator().getPosition().updatePosition(p.getX(), p.getY(), p.getZ());
+            session.getToHandle().add(p);
         }
 
-        if (packet instanceof ClientChatPacket) {
+        else if (packet instanceof ClientChatPacket) {
             ClientChatPacket p = (ClientChatPacket) packet;
             System.out.println(p.getMessage());
             String chatMsg = p.getMessage();

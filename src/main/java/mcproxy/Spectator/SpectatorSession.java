@@ -6,6 +6,7 @@ import mcproxy.Player;
 import mcproxy.WorldState;
 import science.atlarge.opencraft.mcprotocollib.data.game.PlayerListEntry;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.player.ClientPlayerPositionPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerPlayerListEntryPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityDestroyPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.player.ServerPlayerAbilitiesPacket;
@@ -16,10 +17,7 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.Server
 import science.atlarge.opencraft.packetlib.Session;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -30,6 +28,7 @@ public class SpectatorSession {
     @Getter
     private final Queue<Packet> messageQueue = new ConcurrentLinkedDeque<>();
     private final Set<Packet> receivedChunks = new HashSet<>();
+    private ConcurrentLinkedDeque<Packet> toHandle = new ConcurrentLinkedDeque<>();
     private Session session;
     private Spectator spectator;
     private packetForwarder packetForwarder;
@@ -87,7 +86,7 @@ public class SpectatorSession {
 
     public boolean isInRange(Player p) {
         double distance =  server.getWorldState().getPlayerPositionManager().getDistance(spectator.getPosition().getX(), spectator.getPosition().getZ(), p.getPositon().getX(),  p.getPositon().getZ());
-        return distance < 175;
+        return distance < 150;
     }
 
     private boolean isAlreadyInRange(Player p) {
@@ -129,12 +128,29 @@ public class SpectatorSession {
         }
     }
 
-    public void pulse() {
+    private void processPackets() {
+        Packet[] toProcess = toHandle.toArray(new Packet[0]);
+        for (Packet packet : toProcess) {
+            if (packet instanceof ClientPlayerPositionPacket) {
+                ClientPlayerPositionPacket p = (ClientPlayerPositionPacket) packet;
+                spectator.getPosition().updatePosition(p.getX(), p.getY(), p.getZ());
+            }
+        }
+        toHandle.removeAll(Arrays.asList(toProcess));
+    }
+
+    public void update() {
         if (isReady) {
             Queue<Packet> toRemove = messageQueue;
             toRemove.forEach(session::send);
             getMessageQueue().removeAll(toRemove);
             updatePlayersInRange();
+        }
+    }
+
+    public void pulse() {
+        if (isReady) {
+            processPackets();
         }
     }
 
@@ -148,6 +164,10 @@ public class SpectatorSession {
 
     public packetForwarder getPacketForwarder() {
         return packetForwarder;
+    }
+
+    public ConcurrentLinkedDeque<Packet> getToHandle() {
+        return toHandle;
     }
 
     public Spectator getSpectator() {

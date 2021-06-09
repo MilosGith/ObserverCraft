@@ -41,9 +41,9 @@ public final class SessionRegistry {
         return sessions;
     }
 
-//    private ArrayList<SpectatorSession> getSessionsCopy() {
-//        return new ArrayList<>(sessions);
-//    }
+    public void update() {
+        sessions.keySet().forEach(SpectatorSession::update);
+    }
 
     public void pulse() {
         sessions.keySet().forEach(SpectatorSession::pulse);

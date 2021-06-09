@@ -58,15 +58,12 @@ public class ServerTicker implements Runnable {
 
             startMeasurement("tick_forward", "duration of how long it takes to forward packets");
             server.getSessionRegistry().pulse();
-            try {
-                Thread.sleep(server.getSpectatorCount());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
             stopMeasurement("tick_forward");
-            //server.getWorldState().getPlayerPositionManager().getEntityList().forEach(player -> System.out.println(player.getPositon().toString()));
-            //System.out.println("ticking now");
+
+            startMeasurement("tick_update", "duration of how long it takes for proxy to perform its tasks (forwarding, updating inrange  players");
+            server.getSessionRegistry().update();
+            stopMeasurement("tick_update");
+
             stopMeasurement("tick");
             sched.sleepTick();
         }
