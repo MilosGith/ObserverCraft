@@ -10,6 +10,7 @@ import science.atlarge.opencraft.packetlib.packet.Packet;
 import science.atlarge.opencraft.packetlib.tcp.TcpSessionFactory;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +20,7 @@ public class ServerConnection {
     private String host = null;
     private int port = 25565;
     private Client client;
+    private ConcurrentLinkedQueue<Packet> toHandle = new ConcurrentLinkedQueue<>();
 
     public ServerConnection(ObserverServer server, String serverIP) {
         this.server = server;
@@ -40,6 +42,10 @@ public class ServerConnection {
         } else {
             ObserverServer.logger.log(Level.WARNING,"mc server not online, cant connect");
         }
+    }
+
+    public ConcurrentLinkedQueue<Packet> getToHandle() {
+        return toHandle;
     }
 
     public void chat (String msg) {

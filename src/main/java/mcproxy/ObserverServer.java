@@ -3,6 +3,7 @@ package mcproxy;
 import com.github.steveice10.mc.auth.data.GameProfile;
 
 import mcproxy.Connection.ServerConnection;
+import mcproxy.Connection.ServerMessageHandler;
 import mcproxy.Spectator.Spectator;
 import mcproxy.Spectator.SpectatorSession;
 import mcproxy.measurements.EventFileLogger;
@@ -58,6 +59,8 @@ public class ObserverServer {
 
     private EventLogger eventLogger;
 
+    private ServerMessageHandler serverMessageHandler;
+
     private static final boolean VERIFY_USERS = false;
     private String HOST = null;
     private String serverIP = null;
@@ -79,6 +82,7 @@ public class ObserverServer {
             }
         }
         initEventLogging();
+        this.serverMessageHandler = new ServerMessageHandler(this);
     }
 
     private void setupServer() {
@@ -154,6 +158,10 @@ public class ObserverServer {
 
     public SessionRegistry getSessionRegistry() {
         return sessionRegistry;
+    }
+
+    public ServerMessageHandler getServerMessageHandler() {
+        return serverMessageHandler;
     }
 
     public EventLogger getEventLogger() {

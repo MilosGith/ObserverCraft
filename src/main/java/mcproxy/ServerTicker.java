@@ -3,7 +3,9 @@ package mcproxy;
 import com.atlarge.yscollector.YSCollector;
 import mcproxy.ObserverServer;
 import mcproxy.util.Scheduler;
+import science.atlarge.opencraft.packetlib.packet.Packet;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -42,14 +44,27 @@ public class ServerTicker implements Runnable {
         Scheduler sched = new Scheduler(50);
         sched.start();
 
+
         while (running.get()) {
             startMeasurement("tick", "The duration of a tick");
+
+            startMeasurement("tick_server", "duration of how long it takes to process server packets");
+            Packet[] toHandle = server.getConnection().getToHandle().toArray(new Packet[0]);
+            for (Packet packet : toHandle) {
+                server.getServerMessageHandler().handlePacket(packet);
+            }
+            server.getConnection().getToHandle().removeAll(Arrays.asList(toHandle));
+            stopMeasurement("tick_server");
+
+            startMeasurement("tick_forward", "duration of how long it takes to forward packets");
             server.getSessionRegistry().pulse();
             try {
                 Thread.sleep(server.getSpectatorCount());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            stopMeasurement("tick_forward");
             //server.getWorldState().getPlayerPositionManager().getEntityList().forEach(player -> System.out.println(player.getPositon().toString()));
             //System.out.println("ticking now");
             stopMeasurement("tick");
