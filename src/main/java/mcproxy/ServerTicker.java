@@ -56,9 +56,9 @@ public class ServerTicker implements Runnable {
             server.getConnection().getToHandle().removeAll(Arrays.asList(toHandle));
             stopMeasurement("tick_server");
 
-            startMeasurement("tick_forward", "duration of how long it takes to forward packets");
+            startMeasurement("tick_client", "duration of how long it takes to process client packets");
             server.getSessionRegistry().pulse();
-            stopMeasurement("tick_forward");
+            stopMeasurement("tick_client");
 
             startMeasurement("tick_update", "duration of how long it takes for proxy to perform its tasks (forwarding, updating inrange  players");
             server.getSessionRegistry().update();

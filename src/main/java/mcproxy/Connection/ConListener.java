@@ -8,6 +8,7 @@ import mcproxy.util.WorldPosition;
 import org.bukkit.material.Observer;
 import science.atlarge.opencraft.mcprotocollib.MinecraftProtocol;
 import science.atlarge.opencraft.mcprotocollib.data.SubProtocol;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerChatPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerPlayerListEntryPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.*;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnMobPacket;
@@ -31,13 +32,19 @@ public class ConListener implements SessionListener {
     @Override
     public void packetReceived(PacketReceivedEvent pre) {
         Packet packet = pre.getPacket();
-        //count++;
-        //System.out.println("received package: ," + pre.getPacket().getClass().getName().toString() +  "   | Number packages:" + count);
+//        count++;
+//        System.out.println("received package: ," + pre.getPacket().getClass().getName().toString() +  "   | Number packages:" + count);
 
         MinecraftProtocol pro = (MinecraftProtocol) pre.getSession().getPacketProtocol();
 
         if (pro.getSubProtocol() == SubProtocol.GAME) {
-            connection.getToHandle().add(packet);
+            if (packet instanceof ServerChatPacket) {
+                connection.getServer().getSessionRegistry().getSessions().keySet().forEach(s -> {
+                    s.getPacketForwarder().forwardPacket(packet);
+                });
+            } else {
+                connection.getToHandle().add(packet);
+            }
         }
     }
 

@@ -34,7 +34,7 @@ public class packetForwarder {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
                             ServerEntityPositionPacket toSend = new ServerEntityPositionPacket(session.getSpectator().getId(), p.getMovementX(), p.getMovementY(), p.getMovementZ(), false);
-                            session.getMessageQueue().add(toSend);
+                            session.getSession().send(toSend);
                         } else {
                             session.getMessageQueue().add(packet);
                         }
@@ -50,7 +50,7 @@ public class packetForwarder {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
                             ServerEntityRotationPacket toSend = new ServerEntityRotationPacket(session.getSpectator().getId(), p.getYaw(), p.getPitch(), p.isOnGround());
-                            session.getMessageQueue().add(toSend);
+                            session.getSession().send(toSend);
                         } else {
                             session.getMessageQueue().add(packet);
                         }
@@ -67,7 +67,7 @@ public class packetForwarder {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
                             ServerEntityTeleportPacket toSend = new ServerEntityTeleportPacket(session.getSpectator().getId(), p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch(), p.isOnGround());
-                            session.getMessageQueue().add(toSend);
+                            session.getSession().send(toSend);
                         } else {
                             session.getMessageQueue().add(packet);
                         }
@@ -83,7 +83,7 @@ public class packetForwarder {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
                             ServerEntityHeadLookPacket toSend = new ServerEntityHeadLookPacket(session.getSpectator().getId(), p.getHeadYaw());
-                            session.getMessageQueue().add(toSend);
+                            session.getSession().send(toSend);
                         } else {
                             session.getMessageQueue().add(packet);
                         }
@@ -99,7 +99,7 @@ public class packetForwarder {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
                             ServerEntityAnimationPacket toSend = new ServerEntityAnimationPacket(session.getSpectator().getId(), p.getAnimation());
-                            session.getMessageQueue().add(toSend);
+                            session.getSession().send(toSend);
                         } else {
                             session.getMessageQueue().add(packet);
                         }
@@ -115,7 +115,7 @@ public class packetForwarder {
                     if (followMode) {
                         if (p.getEntityId() == followId) {
                             ServerEntityPositionRotationPacket toSend = new ServerEntityPositionRotationPacket(session.getSpectator().getId(), p.getMovementX(), p.getMovementY(), p.getMovementZ(), p.getYaw(), p.getPitch(), p.isOnGround());
-                            session.getMessageQueue().add(toSend);
+                            session.getSession().send(toSend);
                         } else {
                             session.getMessageQueue().add(packet);
                         }
