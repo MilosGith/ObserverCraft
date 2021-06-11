@@ -45,7 +45,7 @@ public class ObserverServer {
 
     public static final Logger logger = Logger.getLogger("MCspectating");
 
-    private WorldState worldState = new WorldState();
+    private WorldState worldState = new WorldState(this);
 
     private SessionRegistry sessionRegistry = new SessionRegistry();
 
@@ -147,7 +147,6 @@ public class ObserverServer {
             connection.chat("/observe");
         }
     }
-
     public int getSpectatorCount() {
         return numSpectators.get();
     }

@@ -45,7 +45,7 @@ public class SpectatorSession {
     }
 
     public void joinSpectator() throws InterruptedException {
-        requestChunks();
+        sendChunks();
         spawnSpectator();
         sendWeather();
         spawnMobs();
@@ -78,6 +78,10 @@ public class SpectatorSession {
 
     public boolean hasChunk (int x, int z) {
         return getReceivedChunksCopy().stream().anyMatch(o -> ((ServerChunkDataPacket) o).getColumn().getX() == x && ((ServerChunkDataPacket) o).getColumn().getZ() == z);
+    }
+
+    private void sendChunks() {
+        server.getWorldState().getChunkManager().sendChunks(this);
     }
 
     public void requestChunks() {

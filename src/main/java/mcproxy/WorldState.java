@@ -2,6 +2,7 @@ package mcproxy;
 
 import mcproxy.Connection.ServerConnection;
 import mcproxy.util.SpawnLocation;
+import org.bukkit.Chunk;
 import org.bukkit.event.player.PlayerJoinEvent;
 import science.atlarge.opencraft.mcprotocollib.data.game.entity.metadata.Position;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.ServerJoinGamePacket;
@@ -17,10 +18,7 @@ import java.util.logging.Logger;
 
 public class WorldState {
 
-    public WorldState() {
-    }
-
-    public ReentrantLock chunkLock = new ReentrantLock();
+    private ChunkManager chunkManager;
 
     private PlayerPositionManager playerManager = new PlayerPositionManager();
 
@@ -39,6 +37,13 @@ public class WorldState {
     private ServerUpdateTimePacket serverTime = null;
 
     private boolean isRaining = false;
+
+    private ObserverServer server;
+
+    public WorldState(ObserverServer serv) {
+        this.server = serv;
+        this.chunkManager = new ChunkManager(server);
+    }
 
     public SpawnLocation getSpawn() {
         return spawn;
@@ -63,7 +68,6 @@ public class WorldState {
     }
 
     public  Queue<Packet> getPlayersToJoin() { return playersToJoin; }
-
 
     public void setRain(ServerNotifyClientPacket p) {
         this.rain = p;
@@ -101,7 +105,7 @@ public class WorldState {
         return playerManager;
     }
 
-    public ReentrantLock getChunkLock() {
-        return chunkLock;
+    public ChunkManager getChunkManager() {
+        return chunkManager;
     }
 }

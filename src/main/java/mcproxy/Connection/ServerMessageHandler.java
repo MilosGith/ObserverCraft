@@ -12,9 +12,7 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.Serve
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.ServerEntityTeleportPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnMobPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerNotifyClientPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerSpawnPositionPacket;
-import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerUpdateTimePacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.*;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.Queue;
@@ -44,6 +42,19 @@ public class ServerMessageHandler {
                 worldState.getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(), new WorldPosition(p.getX(), p.getY(), p.getZ()), p.getMetadata()));
             }
 
+        }
+
+        else if (packet instanceof ServerChunkDataPacket) {
+            ServerChunkDataPacket p = (ServerChunkDataPacket) packet;
+            if (!server.getWorldState().getChunkManager().containsChunk(p.getColumn().getX(), p.getColumn().getZ())) {
+                server.getConnection().getServer().getWorldState().getChunkManager().addChunk(p);
+            }
+        }
+
+        else if (packet instanceof ServerBlockChangePacket) {
+            //System.out.println("got block change packet");
+            ServerBlockChangePacket p = (ServerBlockChangePacket) packet;
+            server.getWorldState().getChunkManager().setModified(p);
         }
 
         else if (packet instanceof ServerPlayerListEntryPacket) {
