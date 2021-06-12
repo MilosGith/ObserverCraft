@@ -2,6 +2,8 @@ package mcproxy;
 
 import mcproxy.Spectator.SpectatorSession;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.ClientChatPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.player.ClientPlayerPositionPacket;
+import science.atlarge.opencraft.mcprotocollib.packet.ingame.client.player.ClientPlayerPositionRotationPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerBlockChangePacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerChunkDataPacket;
 import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.ServerUnloadChunkPacket;
@@ -22,11 +24,12 @@ public class ChunkManager {
     public void sendChunks(SpectatorSession session) {
         HashSet<ServerChunkDataPacket> toRefresh = new HashSet<>();
         //System.out.println(toRefresh.size());
-        chunkMap.forEach((c, q) -> {
-            if (!q) {
-                session.getSession().send(c);
+        chunkMap.forEach((chunk, modified) -> {
+            if (!modified) {
+                session.getSession().send(chunk);
+                session.getReceivedChunks().add(chunk);
             } else {
-                toRefresh.add(c);
+                toRefresh.add(chunk);
             }
         });
 
