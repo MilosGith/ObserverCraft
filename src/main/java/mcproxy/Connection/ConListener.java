@@ -43,7 +43,7 @@ public class ConListener implements SessionListener {
 
     @Override
     public void packetSending(PacketSendingEvent packetSendingEvent) {
-       // System.out.println("Sending non-game packet: " + packetSendingEvent.getPacket().getClass().getName());
+       //System.out.println("Sending non-game packet: " + packetSendingEvent.getPacket().getClass().getName());
     }
 
     @Override

@@ -18,7 +18,7 @@ import science.atlarge.opencraft.packetlib.packet.Packet;
 import java.util.Queue;
 
 public class ServerMessageHandler {
-    ObserverServer server;
+    private ObserverServer server;
 
     public ServerMessageHandler(ObserverServer serv) {
         this.server = serv;
@@ -46,8 +46,16 @@ public class ServerMessageHandler {
 
         else if (packet instanceof ServerChunkDataPacket) {
             ServerChunkDataPacket p = (ServerChunkDataPacket) packet;
-            if (!server.getWorldState().getChunkManager().containsChunk(p.getColumn().getX(), p.getColumn().getZ())) {
+            //System.out.println("got chunk packet: x = " + p.getColumn().getX() + " z = " + p.getColumn().getZ());
+            if (!worldState.getChunkManager().containsChunk(p.getColumn().getX(), p.getColumn().getZ())) {
                 server.getConnection().getServer().getWorldState().getChunkManager().addChunk(p);
+            }
+        }
+
+        else if (packet instanceof ServerUnloadChunkPacket) {
+            ServerUnloadChunkPacket p = (ServerUnloadChunkPacket) packet;
+            if (!worldState.getChunkManager().containsChunk(p.getX(), p.getZ())) {
+                worldState.getChunkManager().removeChunk(p);
             }
         }
 

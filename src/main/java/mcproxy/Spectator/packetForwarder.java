@@ -123,9 +123,23 @@ public class packetForwarder {
                         session.getMessageQueue().add(packet);
                     }
                 }
-            } else if (packet instanceof ServerChatPacket) {
-                ServerChatPacket p = (ServerChatPacket) packet;
-                session.getSession().send(new ServerChatPacket(p.getMessage()));
+            }
+            else if (packet instanceof ServerEntityEquipmentPacket) {
+                //System.out.println("GOT ENTITY POSTION ROTATION PACKET");
+                ServerEntityEquipmentPacket p = (ServerEntityEquipmentPacket) packet;
+                Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
+                if (player != null && session.isInRange(player)) {
+                    if (followMode) {
+                        if (p.getEntityId() == followId) {
+                            ServerEntityEquipmentPacket toSend = new ServerEntityEquipmentPacket(session.getSpectator().getId(), p.getSlot(), p.getItem());
+                            session.getMessageQueue().add(toSend);
+                        } else {
+                            session.getMessageQueue().add(packet);
+                        }
+                    } else {
+                        session.getMessageQueue().add(packet);
+                    }
+                }
             }
              else {
                  //System.out.println("ADDING: " + packet.getClass().toString() + " PACKET TO QUEUE");

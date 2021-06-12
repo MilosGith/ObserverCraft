@@ -25,7 +25,6 @@ import java.util.logging.Level;
 public class SpectatorSession {
     private boolean isReady = false;
     private ObserverServer server;
-    @Getter
     private final Queue<Packet> messageQueue = new ConcurrentLinkedDeque<>();
     private final Set<Packet> receivedChunks = new HashSet<>();
     private ConcurrentLinkedDeque<Packet> toHandle = new ConcurrentLinkedDeque<>();
