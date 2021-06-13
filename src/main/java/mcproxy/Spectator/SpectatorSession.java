@@ -18,6 +18,7 @@ import science.atlarge.opencraft.packetlib.Session;
 import science.atlarge.opencraft.packetlib.packet.Packet;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -26,7 +27,7 @@ public class SpectatorSession {
     private boolean isReady = false;
     private ObserverServer server;
     private final Queue<Packet> messageQueue = new ConcurrentLinkedDeque<>();
-    private final Set<Packet> receivedChunks = new HashSet<>();
+    private final Set<Packet> receivedChunks = ConcurrentHashMap.newKeySet();
     private ConcurrentLinkedDeque<Packet> toHandle = new ConcurrentLinkedDeque<>();
     private Session session;
     private Spectator spectator;

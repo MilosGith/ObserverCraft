@@ -11,6 +11,7 @@ import science.atlarge.opencraft.mcprotocollib.packet.ingame.server.world.Server
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 
 public class ChunkManager {
@@ -34,7 +35,7 @@ public class ChunkManager {
         });
 
         chunkMap.keySet().removeAll(toRefresh);
-        requestChunks(toRefresh);
+        if (toRefresh.size() > 0) requestChunks(toRefresh);
     }
 
     public void setModified(ServerBlockChangePacket packet) {

@@ -41,7 +41,6 @@ public class ServerMessageHandler {
             if (worldState.getPlayerPositionManager().findById(p.getEntityId()) == null) {
                 worldState.getPlayerPositionManager().getEntityList().add(new Player(p.getUUID(), p.getEntityId(), new WorldPosition(p.getX(), p.getY(), p.getZ()), p.getMetadata()));
             }
-
         }
 
         else if (packet instanceof ServerChunkDataPacket) {
