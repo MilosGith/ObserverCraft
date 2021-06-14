@@ -31,114 +31,107 @@ public class packetForwarder {
                 ServerEntityPositionPacket p = (ServerEntityPositionPacket) packet;
                 Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
+                    Packet toSend = packet;
                     if (followMode) {
                         if (p.getEntityId() == followId) {
-                            ServerEntityPositionPacket toSend = new ServerEntityPositionPacket(session.getSpectator().getId(), p.getMovementX(), p.getMovementY(), p.getMovementZ(), false);
-                            session.getMessageQueue().add(toSend);
-                        } else {
-                            session.getMessageQueue().add(packet);
+                            toSend = new ServerEntityPositionPacket(session.getSpectator().getId(), p.getMovementX(), p.getMovementY(), p.getMovementZ(), false);
                         }
-                    } else {
-                        session.getMessageQueue().add(packet);
                     }
+                    session.getMessageQueue().add(toSend);
+                } else {
+                    session.getMessageQueue().add(packet);
                 }
             }
             else if (packet instanceof ServerEntityRotationPacket) {
                 ServerEntityRotationPacket p = (ServerEntityRotationPacket) packet;
                 Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
+                    Packet toSend = packet;
                     if (followMode) {
                         if (p.getEntityId() == followId) {
-                            ServerEntityRotationPacket toSend = new ServerEntityRotationPacket(session.getSpectator().getId(), p.getYaw(), p.getPitch(), p.isOnGround());
-                            session.getMessageQueue().add(toSend);
-                        } else {
-                            session.getMessageQueue().add(packet);
+                            toSend = new ServerEntityRotationPacket(session.getSpectator().getId(), p.getYaw(), p.getPitch(), p.isOnGround());
                         }
-                    } else {
-                        session.getMessageQueue().add(packet);
                     }
+                    session.getMessageQueue().add(toSend);
+                } else {
+                    session.getMessageQueue().add(packet);
                 }
-
 
             } else if (packet instanceof ServerEntityTeleportPacket){
                 ServerEntityTeleportPacket p = (ServerEntityTeleportPacket) packet;
                 Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
+                    Packet toSend = packet;
                     if (followMode) {
                         if (p.getEntityId() == followId) {
-                            ServerEntityTeleportPacket toSend = new ServerEntityTeleportPacket(session.getSpectator().getId(), p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch(), p.isOnGround());
-                            session.getMessageQueue().add(toSend);
-                        } else {
-                            session.getMessageQueue().add(packet);
+                            toSend = new ServerEntityTeleportPacket(session.getSpectator().getId(), p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch(), p.isOnGround());
                         }
-                    } else {
-                        session.getMessageQueue().add(packet);
                     }
+                    session.getMessageQueue().add(toSend);
+                } else {
+                    session.getMessageQueue().add(packet);
                 }
 
             } else if (packet instanceof  ServerEntityHeadLookPacket) {
                 ServerEntityHeadLookPacket p = (ServerEntityHeadLookPacket) packet;
                 Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
+                    Packet toSend = packet;
                     if (followMode) {
                         if (p.getEntityId() == followId) {
-                            ServerEntityHeadLookPacket toSend = new ServerEntityHeadLookPacket(session.getSpectator().getId(), p.getHeadYaw());
-                            session.getMessageQueue().add(toSend);
-                        } else {
-                            session.getMessageQueue().add(packet);
+                            toSend = new ServerEntityHeadLookPacket(session.getSpectator().getId(), p.getHeadYaw());
                         }
-                    } else {
-                        session.getMessageQueue().add(packet);
                     }
+                    session.getMessageQueue().add(toSend);
+                } else {
+                    session.getMessageQueue().add(packet);
                 }
 
             } else if (packet instanceof  ServerEntityAnimationPacket) {
                 ServerEntityAnimationPacket p = (ServerEntityAnimationPacket) packet;
                 Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
+                    Packet toSend = packet;
                     if (followMode) {
                         if (p.getEntityId() == followId) {
-                            ServerEntityAnimationPacket toSend = new ServerEntityAnimationPacket(session.getSpectator().getId(), p.getAnimation());
-                            session.getMessageQueue().add(toSend);
-                        } else {
-                            session.getMessageQueue().add(packet);
+                            toSend = new ServerEntityAnimationPacket(session.getSpectator().getId(), p.getAnimation());
                         }
-                    } else {
-                        session.getMessageQueue().add(packet);
                     }
+                    session.getMessageQueue().add(toSend);
+                } else {
+                    session.getMessageQueue().add(packet);
                 }
+
             } else if (packet instanceof ServerEntityPositionRotationPacket) {
                 //System.out.println("GOT ENTITY POSTION ROTATION PACKET");
                 ServerEntityPositionRotationPacket p = (ServerEntityPositionRotationPacket) packet;
                 Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
+                    Packet toSend = packet;
                     if (followMode) {
                         if (p.getEntityId() == followId) {
-                            ServerEntityPositionRotationPacket toSend = new ServerEntityPositionRotationPacket(session.getSpectator().getId(), p.getMovementX(), p.getMovementY(), p.getMovementZ(), p.getYaw(), p.getPitch(), p.isOnGround());
-                            session.getMessageQueue().add(toSend);
-                        } else {
-                            session.getMessageQueue().add(packet);
+                            toSend = new ServerEntityPositionRotationPacket(session.getSpectator().getId(), p.getMovementX(), p.getMovementY(), p.getMovementZ(), p.getYaw(), p.getPitch(), p.isOnGround());
                         }
-                    } else {
-                        session.getMessageQueue().add(packet);
                     }
+                    session.getMessageQueue().add(toSend);
+                } else {
+                    session.getMessageQueue().add(packet);
                 }
-            }
-            else if (packet instanceof ServerEntityEquipmentPacket) {
+
+            } else if (packet instanceof ServerEntityEquipmentPacket) {
                 //System.out.println("GOT ENTITY POSTION ROTATION PACKET");
                 ServerEntityEquipmentPacket p = (ServerEntityEquipmentPacket) packet;
                 Player player = session.getServer().getWorldState().getPlayerPositionManager().findById(p.getEntityId());
                 if (player != null && session.isInRange(player)) {
+                    Packet toSend = packet;
                     if (followMode) {
                         if (p.getEntityId() == followId) {
-                            ServerEntityEquipmentPacket toSend = new ServerEntityEquipmentPacket(session.getSpectator().getId(), p.getSlot(), p.getItem());
-                            session.getMessageQueue().add(toSend);
-                        } else {
-                            session.getMessageQueue().add(packet);
+                            toSend = new ServerEntityEquipmentPacket(session.getSpectator().getId(), p.getSlot(), p.getItem());
                         }
-                    } else {
-                        session.getMessageQueue().add(packet);
                     }
+                    session.getMessageQueue().add(toSend);
+                } else {
+                    session.getMessageQueue().add(packet);
                 }
             }
              else {

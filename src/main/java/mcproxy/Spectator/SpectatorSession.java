@@ -58,8 +58,9 @@ public class SpectatorSession {
         Position pos = worldState.getSpawn().getPosition();
         session.send(new ServerSpawnPositionPacket(pos));
         session.send(new ServerPlayerPositionRotationPacket(pos.getX(), pos.getY(), pos.getZ(), 0f, 0f, 0));
-        session.send(new ServerPlayerAbilitiesPacket(true, true, true, true, 0.2f, 1f));
+        session.send(new ServerPlayerAbilitiesPacket(true, false, true, true, 0.2f, 1f));
     }
+
     private void spawnPlayers() {
         Queue<Packet> toJoin = server.getWorldState().getPlayersToJoin();
         for (Packet p : toJoin) {
@@ -84,13 +85,9 @@ public class SpectatorSession {
         server.getWorldState().getChunkManager().sendChunks(this);
     }
 
-    public void requestChunks() {
-        server.getConnection().chat("/chunks");
-    }
-
     public boolean isInRange(Player p) {
         double distance =  server.getWorldState().getPlayerPositionManager().getDistance(spectator.getPosition().getX(), spectator.getPosition().getZ(), p.getPositon().getX(),  p.getPositon().getZ());
-        return distance < 150;
+        return distance < 200;
     }
 
     private boolean isAlreadyInRange(Player p) {
